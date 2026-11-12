@@ -47,14 +47,15 @@ int gamefolder_language(void) {
     while (f && fgets(line, sizeof line, f))
         if (!strncmp(line, "Language", 8)) {
             fclose(f);
-            return strstr(line, "Spanish") ? 1 : 0;
+            return strstr(line, "Spanish") ? 1 : strstr(line, "Chinese") ? 2 : 0;
         }
     if (f) fclose(f);
     int n = 0;
     SDL_Locale **loc = SDL_GetPreferredLocales(&n);
     bool es = loc && n > 0 && loc[0]->language && !SDL_strncasecmp(loc[0]->language, "es", 2);
+    bool zh = loc && n > 0 && loc[0]->language && !SDL_strncasecmp(loc[0]->language, "zh", 2);
     SDL_free(loc);
-    return es ? 1 : 0;
+    return zh ? 2 : es ? 1 : 0;
 }
 
 // The executable's folder (out: "" when unknown)

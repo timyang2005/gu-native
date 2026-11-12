@@ -416,6 +416,40 @@ static void forge_style(ImGuiStyle &style) {  // Forge's own (source/forge/graph
     c[ImGuiCol_NavWindowingDimBg] = c[ImGuiCol_ModalWindowDimBg] = dim;
 }
 
+// The menu's Chinese: a font that has the glyphs, merged into the font added last. ImGui 1.92's atlas is dynamic: each
+// glyph is made the first time it is drawn, so no glyph ranges are needed. The system's font first, then one a build may
+// ship beside the program (`fonts/`)
+static void merge_cjk(ImGuiIO &io, float size) {
+    std::vector<std::string> paths;
+#ifdef __ANDROID__
+    for (const char *p : {"/system/fonts/NotoSansSC-Regular.otf", "/system/fonts/NotoSansCJK-Regular.ttc",
+                          "/system/fonts/NotoSansCJKsc-Regular.otf", "/system/fonts/DroidSansFallback.ttf"})
+        paths.push_back(p);
+#elif defined(_WIN32)
+    const char *windir = getenv("WINDIR");
+    std::string dir = std::string(windir && *windir ? windir : "C:/Windows") + "/Fonts/";
+    for (const char *p : {"msyh.ttc", "msyh.ttf", "simhei.ttf", "msyhl.ttc", "simsun.ttc", "Deng.ttf"})
+        paths.push_back(dir + p);
+    paths.push_back("fonts/NotoSansSC-Regular.otf");
+#else
+    for (const char *p : {"/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+                          "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"})
+        paths.push_back(p);
+#endif
+    for (const std::string &p : paths) {
+        if (access(p.c_str(), R_OK) != 0) continue;
+        ImFontConfig merge;
+        merge.MergeMode = true;
+        merge.SizePixels = size;
+        merge.Flags |= ImFontFlags_NoLoadError;
+        if (io.Fonts->AddFontFromFileTTF(p.c_str(), size, &merge)) {
+            LOG("[forge] Chinese glyphs from %s\n", p.c_str());
+            return;
+        }
+    }
+    LOG("[forge] no font with Chinese found: the menu's Chinese comes out blank\n");
+}
+
 void overlay_init(const char *font_path, float font_size, int menu_key) {
 #ifdef MHGU_NULL_BACKEND
     return;
@@ -438,6 +472,7 @@ void overlay_init(const char *font_path, float font_size, int menu_key) {
 #endif
     ImFont *font = font_path ? io.Fonts->AddFontFromFileTTF(font_path, g_font_size, &cfg) : nullptr;
     if (!font) io.Fonts->AddFontDefaultVector(&cfg);
+    merge_cjk(io, g_font_size);  // (the menu's Chinese: the body's font)
 #ifdef __ANDROID__
     // (the titles' serif, as the game's own and the MH4U port's: the second font, settings_panel.cpp title_font; a phone
     // without one has the main font there)

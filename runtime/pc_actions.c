@@ -32,7 +32,10 @@
 static const uint8_t SAVE_MARK[4] = {0x74, 0xee, 0xb2, 0x36};
 #define PENDING_DIR "save_import"  // (beside the settings: applied at the next start, before the game runs)
 
-static int lang(void) { return config_editable().language == 1 ? 1 : 0; }
+static int lang(void) {
+    int l = config_editable().language;
+    return l == 1 || l == 2 ? l : 0;  // (0 English, 1 Spanish, 2 Chinese)
+}
 static const char *T(const char *en) { return settings_text(lang(), en); }
 
 static void notice(const char *title, const char *text) {

@@ -875,7 +875,7 @@ const ConfigSetting g_settings[] = {
     ON_OFF("Application", "PauseInBackground", pause_background, false),
     ON_OFF("Application", "PauseInMenu", pause_menu, false),
     ON_OFF("Application", "ConfirmExit", confirm_exit, false),
-    {"Application", "Language", SET_CHOICE, F(language), 0, 0, 0, "English|en,Spanish|es", NULL, false, ERR_LANGUAGE},
+    {"Application", "Language", SET_CHOICE, F(language), 0, 0, 0, "English|en,Spanish|es,Chinese|zh|cn|zh-hans", NULL, false, ERR_LANGUAGE},
     {"Application", "ButtonIcons", SET_CHOICE, F(button_icons), 0, 0, 0, "Xbox,Switch,PlayStation", NULL, false, ERR_ICONS},
     {"Application", "Theme", SET_CHOICE, F(menu_theme), 0, 0, 0, "Gold,Blue,Hunter", NULL, false, ERR_MISC},
     {"Application", "MenuScale", SET_INT, F(menu_scale), 0, 50, 200, NULL, NULL, false, ERR_SCALE},

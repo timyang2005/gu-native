@@ -390,6 +390,9 @@ void shadow_text(ImDrawList *dl, float size, ImVec2 p, ImU32 col, const char *te
 // credits' and the thank-you's
 ImFont *title_font() {
     ImGuiIO &io = ImGui::GetIO();
+    // (Chinese: the body's font, which the CJK font is merged into. The serif has no Chinese of its own, and merging the
+    // CJK font into it too would keep a second copy of it in memory - tens of megabytes on a phone)
+    if (config_language() == 2) return ImGui::GetFont();
     return io.Fonts->Fonts.Size > 1 ? io.Fonts->Fonts[1] : ImGui::GetFont();
 }
 // A finger's button: a dark square plate with an edge and a rule inside (the touch controls' discs, made square), gold
@@ -2486,7 +2489,7 @@ std::vector<Row> main_rows() {
         cheat_rows(r);
         break;
     case APP_PAGE:
-        add_choice(r, "language", "Language", c.language, {"English", "Español"},
+        add_choice(r, "language", "Language", c.language, {"English", "Español", "中文"},
                    [](int v) { c.language = v; }, ini("Language"));
         {  // (on a phone too, listed as in the MH4U port: Hunter, Gold, Blue; the file keeps its own order, THEME_*)
             static const int themes[] = {THEME_HUNTER, THEME_GOLD, THEME_BLUE};
@@ -2951,97 +2954,97 @@ void picker_keys(const std::vector<Row> &options) {
 #ifdef __ANDROID__
 // A phone's own: the default ini's speaks of keys and of a PC, and stays in English
 struct PhoneHelp {
-    const char *key, *en, *es;
+    const char *key, *en, *es, *zh;
 };
 const PhoneHelp PHONE_HELP[] = {
     {"RenderScale", "The size of the 3D picture against the screen's. Lower runs faster and looks softer.",
-     "El tamaño de la imagen 3D respecto de la pantalla. Más bajo corre más rápido y se ve más suave."},
+     "El tamaño de la imagen 3D respecto de la pantalla. Más bajo corre más rápido y se ve más suave.", "3D 画面相对屏幕的大小。越低越快，也越糊。"},
     {"ShowMenuPad", "While a menu of the game's is open, a small pad shows that moves its cursor, with the page buttons above it (L and R, or ZL and ZR if the game's options turn pages with them). The movement stick keeps walking and the other buttons stay where they are; where the hunter can't walk (a town's item box, a shop) it moves the cursor too. If the pad covers a combined button, move it with Customize controls and HUD.",
-     "Mientras hay un menú del juego abierto aparece un pad chico que mueve su cursor, con los botones de página encima (L y R, o ZL y ZR si las opciones del juego pasan páginas con ellos). La palanca de movimiento sigue caminando y los demás botones quedan donde están; donde el cazador no puede caminar (la caja de objetos de un pueblo, una tienda) también mueve el cursor. Si el pad tapa un botón combinado, muévelo con Personalizar controles y HUD."},
+     "Mientras hay un menú del juego abierto aparece un pad chico que mueve su cursor, con los botones de página encima (L y R, o ZL y ZR si las opciones del juego pasan páginas con ellos). La palanca de movimiento sigue caminando y los demás botones quedan donde están; donde el cazador no puede caminar (la caja de objetos de un pueblo, una tienda) también mueve el cursor. Si el pad tapa un botón combinado, muévelo con Personalizar controles y HUD.", "打开游戏菜单时，会显示一个小摇杆用来移动光标，其上方是翻页按键（L 和 R；若游戏用 ZL 和 ZR 翻页，则为 ZL 和 ZR）。移动摇杆仍可走路，其他按键位置不变；在猎人无法行走的地方（城镇的道具箱、商店），它也会移动光标。若摇杆挡住了组合按键，可用“自定义按键与 HUD”移动它。"},
     {"ShowMenuZL", "With the menu pad, a ZL tab above its left one (L when the game turns pages with ZL and ZR). Some menus use it to change sections or show more information: the item box, the smithy.",
-     "Con el pad de menú, una pestaña ZL sobre la de la izquierda (L si el juego pasa páginas con ZL y ZR). Algunos menús la usan para cambiar de sección o ver más información: la caja de objetos, la herrería."},
+     "Con el pad de menú, una pestaña ZL sobre la de la izquierda (L si el juego pasa páginas con ZL y ZR). Algunos menús la usan para cambiar de sección o ver más información: la caja de objetos, la herrería.", "使用菜单摇杆时，其左侧按键上方显示 ZL 标签（游戏用 ZL 和 ZR 翻页时为 L）。有些菜单用它切换分类或显示更多信息：道具箱、锻造屋。"},
     {"ShowMenuZR", "With the menu pad, a ZR tab above its right one (R when the game turns pages with ZL and ZR). Some menus use it to change sections or show more information: the item box, the smithy.",
-     "Con el pad de menú, una pestaña ZR sobre la de la derecha (R si el juego pasa páginas con ZL y ZR). Algunos menús la usan para cambiar de sección o ver más información: la caja de objetos, la herrería."},
+     "Con el pad de menú, una pestaña ZR sobre la de la derecha (R si el juego pasa páginas con ZL y ZR). Algunos menús la usan para cambiar de sección o ver más información: la caja de objetos, la herrería.", "使用菜单摇杆时，其右侧按键上方显示 ZR 标签（游戏用 ZL 和 ZR 翻页时为 R）。有些菜单用它切换分类或显示更多信息：道具箱、锻造屋。"},
     {"Bloom", "The glow around lights and the blur of what is far away. Off: faster on a weak phone. Low-end mode turns it off.",
-     "El resplandor alrededor de las luces y el desenfoque de lo lejano. Apagado: más rápido en un teléfono débil. El modo gama baja lo apaga."},
+     "El resplandor alrededor de las luces y el desenfoque de lo lejano. Apagado: más rápido en un teléfono débil. El modo gama baja lo apaga.", "灯光周围的光晕，以及远处景物的模糊。关闭：低配手机更快。低配模式会关闭它。"},
     {"Reverb", "The echo of caves and rooms. Off: the sound is dry, and a weak phone's processor does less.",
-     "El eco de cuevas y salas. Apagada: el sonido queda seco y el procesador de un teléfono débil trabaja menos."},
+     "El eco de cuevas y salas. Apagada: el sonido queda seco y el procesador de un teléfono débil trabaja menos.", "洞穴和房间里的回声。关闭：声音干涩，低配手机的处理器负担更小。"},
     {"LowEnd", "For a weak phone: no bloom or depth of field, cheaper and smaller textures, and the HUD stays sharp over a smaller 3D picture. Toaster: everything for speed and the battery before looks.",
-     "Para un teléfono débil: sin resplandor ni profundidad de campo, texturas más livianas y más chicas, y el HUD sigue nítido sobre una imagen 3D más chica. Tostadora: todo para la velocidad y la batería antes que el aspecto."},
+     "Para un teléfono débil: sin resplandor ni profundidad de campo, texturas más livianas y más chicas, y el HUD sigue nítido sobre una imagen 3D más chica. Tostadora: todo para la velocidad y la batería antes que el aspecto.", "面向低配手机：关闭泛光和景深，纹理更省更小，HUD 在更小的 3D 画面上保持清晰。烤面包机模式：一切为了速度和续航，不重画面。"},
     {"Shadows", "The shadows of hunters, monsters and scenery. Off: a little faster on a weak phone.",
-     "Las sombras de cazadores, monstruos y escenario. Apagadas: un poco más rápido en un teléfono débil."},
+     "Las sombras de cazadores, monstruos y escenario. Apagadas: un poco más rápido en un teléfono débil.", "猎人、怪物与场景的阴影。关闭：低配手机略快。"},
     {"Grass", "The grass fields of the maps, as the tall grass of the Marshland's area 8. Off: faster where there is a lot of it on a weak phone. The plants that are part of a map's ground stay.",
-     "Los pastizales de los mapas, como el pasto alto de la zona 8 del Pantano. Apagado: más rápido donde hay mucho, en un teléfono débil. Las plantas que son parte del suelo del mapa quedan."},
+     "Los pastizales de los mapas, como el pasto alto de la zona 8 del Pantano. Apagado: más rápido donde hay mucho, en un teléfono débil. Las plantas que son parte del suelo del mapa quedan.", "地图中的草丛，例如沼地 8 区的高草。关闭：草多处在低配手机上更快。属于地形一部分的植物保留。"},
     {"AdrenoFix", "Some Adreno drivers repeat the 3D picture in a grid at a low 3D resolution: Auto keeps 2x MSAA there. If the picture looks dark or flickers, or for more speed, choose Off.",
-     "Algunos drivers de Adreno repiten la imagen 3D en grilla con una resolución 3D baja: Auto deja MSAA 2x en ese caso. Si la imagen se ve oscura o parpadea, o para ganar velocidad, elige Off."},
+     "Algunos drivers de Adreno repiten la imagen 3D en grilla con una resolución 3D baja: Auto deja MSAA 2x en ese caso. Si la imagen se ve oscura o parpadea, o para ganar velocidad, elige Off.", "部分 Adreno 驱动在低 3D 分辨率下会把 3D 画面按网格重复：自动会在此保留 2x MSAA。若画面偏暗或闪烁，或想要更快，选关闭。"},
     {"LockOn", "Hold L or tap the padlock by it (a controller: click the right stick; hold it with Control Type 3, where the click changes the target) and the camera keeps turning to the monster, the one the Target Cam chose or the nearest large one, until you do it again. The target button changes the monster. Bows and bowguns fire at it from a normal stance; your own aim, crouching fire and the styles' moves are left to you. Turning the camera yourself pauses it for a moment.",
-     "Mantén apretado L o toca el candado junto a él (un mando: aprieta la palanca derecha; mantenla apretada con el Tipo de control 3, donde el clic cambia el objetivo) y la cámara sigue girando hacia el monstruo, el que eligió la cámara objetivo o el grande más cercano, hasta que lo hagas de nuevo. El botón de objetivo cambia el monstruo. Arcos y ballestas disparan hacia él desde la postura normal; tu propio apuntado, el fuego agachado y los movimientos de los estilos quedan en tus manos. Girar la cámara tú mismo la pausa un momento."},
+     "Mantén apretado L o toca el candado junto a él (un mando: aprieta la palanca derecha; mantenla apretada con el Tipo de control 3, donde el clic cambia el objetivo) y la cámara sigue girando hacia el monstruo, el que eligió la cámara objetivo o el grande más cercano, hasta que lo hagas de nuevo. El botón de objetivo cambia el monstruo. Arcos y ballestas disparan hacia él desde la postura normal; tu propio apuntado, el fuego agachado y los movimientos de los estilos quedan en tus manos. Girar la cámara tú mismo la pausa un momento.", "按住 L，或点它旁边的锁形图标（手柄：按下右摇杆；操作类型 3 下按住它，按下时切换目标），镜头会持续转向怪物——目标镜头选中的那只，或最近的大型怪物——直到你再操作一次。目标按键用于切换怪物。弓和弩在通常站姿下会朝它射击；你自己的瞄准、蹲射和风格的招式仍由你操作。自己转动镜头会让它暂停片刻。"},
     {"GyroAim", "Aiming a bow or a bowgun (a gun's aim, its scope, crouching fire; a bow's aiming mode), turning the phone turns the aim too, from where it was as the aim began, with what your fingers or the sticks do. A controller with a gyro is read instead of the phone. The gyroscope is read only while you aim.",
-     "Al apuntar con un arco o una ballesta (la mira de la ballesta, su visor, el disparo agachado; el modo de apuntar del arco), girar el teléfono también mueve la mira, desde donde estaba al empezar a apuntar, junto con lo que hagan tus dedos o las palancas. Si el mando tiene giroscopio, se usa el del mando en vez del teléfono. El giroscopio solo se lee mientras apuntas."},
+     "Al apuntar con un arco o una ballesta (la mira de la ballesta, su visor, el disparo agachado; el modo de apuntar del arco), girar el teléfono también mueve la mira, desde donde estaba al empezar a apuntar, junto con lo que hagan tus dedos o las palancas. Si el mando tiene giroscopio, se usa el del mando en vez del teléfono. El giroscopio solo se lee mientras apuntas.", "瞄准弓或弩时（弩的瞄准、瞄准镜、蹲射；弓的瞄准模式），转动手机也会转动准心，从开始瞄准时的方向起，叠加你手指或摇杆的操作。接有陀螺仪的手柄时改为读取手柄。只在瞄准时读取陀螺仪。"},
     {"GyroSensitivity", "How far the aim turns for a turn of the phone or the controller: 1.0x the same angle.",
-     "Cuánto gira la mira por cada giro del teléfono o del mando: 1.0x, el mismo ángulo."},
-    {"Join", "A host's IP address, to play over a VPN. Empty: searches your network.", "La dirección IP de un anfitrión, para jugar por VPN. Vacío: busca en tu red."},
+     "Cuánto gira la mira por cada giro del teléfono o del mando: 1.0x, el mismo ángulo.", "手机或手柄转动时准心转动的幅度：1.0x 即相同角度。"},
+    {"Join", "A host's IP address, to play over a VPN. Empty: searches your network.", "La dirección IP de un anfitrión, para jugar por VPN. Vacío: busca en tu red.", "主机的 IP 地址，用于通过 VPN 联机。留空：搜索局域网。"},
     {"Server", "The server that lists hubs over the internet: everyone who uses the same one finds the others' hubs when they search for hubs in the game, with no ports to open. The default, " LDN_DEFAULT_SERVER ", is run by players, not by this project. Custom: type another (a name or IP, and :port if it is not 39510). Off: only your local network. The servers you type and save stay in this list, the last one first (up to 24): the × beside one takes it out (with a controller, the button that saves).",
      "El servidor que lista las salas por internet: todos los que usan el mismo encuentran las salas de los demás al buscar salas en el juego, sin abrir puertos. El predeterminado, " LDN_DEFAULT_SERVER ", lo mantienen jugadores, no este proyecto. Otro: escribe otro (un nombre o una IP, y :puerto si no es el 39510). Ninguno: solo tu red local. Los servidores que escribes y guardas quedan en esta lista, el último primero (hasta 24): la × a su lado lo quita (con un mando, el botón que guarda)."},
     {"Key", "On the hub server, only players with the same key see each other's hubs: agree on one with your friends. Public: no key, the public hubs. The keys you type and save stay in this list, the last one first (up to 24): the × beside one takes it out (with a controller, the button that saves).",
-     "En el servidor de hubs, solo los jugadores con la misma clave ven los hubs de los demás: acuerden una con tus amigos. Pública: sin clave, los hubs públicos. Las claves que escribes y guardas quedan en esta lista, la última primero (hasta 24): la × a su lado la quita (con un mando, el botón que guarda)."},
+     "En el servidor de hubs, solo los jugadores con la misma clave ven los hubs de los demás: acuerden una con tus amigos. Pública: sin clave, los hubs públicos. Las claves que escribes y guardas quedan en esta lista, la última primero (hasta 24): la × a su lado la quita (con un mando, el botón que guarda).", "在集会所服务器上，只有密钥相同的玩家能互相看到集会所：与好友约定同一个。公开：不设密钥，使用公开集会所。你输入并保存的密钥会留在此列表中，最新的在前（最多 24 个）：旁的 × 可将其删除（用手柄时为保存键）。"},
     {"1Player", "The health of large monsters in Hub quests, by number of hunters. When you join a hub, the host's values are used.",
-     "La vida de los monstruos grandes en las misiones del Hub, según la cantidad de cazadores. Al unirte a un Hub se usan los valores del anfitrión."},
-    {"FOV", "How much of the scene you see: higher shows more.", "Cuánto se ve de la escena: un valor mayor muestra más."},
+     "La vida de los monstruos grandes en las misiones del Hub, según la cantidad de cazadores. Al unirte a un Hub se usan los valores del anfitrión.", "集会所任务中大型怪物的体力，按猎人数决定。加入集会所时使用房主的数值。"},
+    {"FOV", "How much of the scene you see: higher shows more.", "Cuánto se ve de la escena: un valor mayor muestra más.", "你能看到的场景范围：越高看到越多。"},
     {"ShowRanged", "With a bow or a bowgun in hand, in a hunt, the touch controls change to a layout of their own. Its buttons are moved in the editor.",
-     "Con un arco o una ballesta en la mano, en una cacería, los controles táctiles pasan a un layout propio. Sus botones se mueven en el editor."},
+     "Con un arco o una ballesta en la mano, en una cacería, los controles táctiles pasan a un layout propio. Sus botones se mueven en el editor.", "手持弓或弩进入任务时，触屏按键会切换为专用布局。其按键在编辑器中调整位置。"},
     {"ShowFire", "A bowgun fires. A bow draws while you hold it and shoots when you let go. Drag on it to aim while you hold it.",
-     "La ballesta dispara. El arco se tensa mientras lo mantienes y dispara al soltar. Arrastra sobre él para apuntar mientras lo mantienes."},
-    {"ShowSecond", "A bowgun reloads. A bow does its melee attack.", "La ballesta recarga. El arco da su golpe cuerpo a cuerpo."},
-    {"ShowAim", "A bowgun: a tap, the scope; held, the quick aim. A bow: the aiming mode.", "Ballesta: un toque, la mira; mantenido, el apuntado rápido. Arco: el modo de apuntado."},
-    {"ShowRangedSpecial", "A bowgun's crouching fire. A bow applies its coating.", "El fuego agachado de la ballesta. El arco aplica su capa."},
-    {"ShowAmmo", "Change the ammo or the coating. A swipe up or down on the item bar does it too.", "Cambian la munición o la capa. También se puede deslizar hacia arriba o abajo sobre la barra de ítems."},
-    {"ShowItemArrows", "Arrows beside the item bar. A swipe on the bar turns it too.", "Flechas a los lados de la barra de ítems. Deslizar sobre la barra también la gira."},
+     "La ballesta dispara. El arco se tensa mientras lo mantienes y dispara al soltar. Arrastra sobre él para apuntar mientras lo mantienes.", "弩为射击。弓按下时拉弓，松开时射出。按住时在按键上拖动可瞄准。"},
+    {"ShowSecond", "A bowgun reloads. A bow does its melee attack.", "La ballesta recarga. El arco da su golpe cuerpo a cuerpo.", "弩为装填。弓为近身攻击。"},
+    {"ShowAim", "A bowgun: a tap, the scope; held, the quick aim. A bow: the aiming mode.", "Ballesta: un toque, la mira; mantenido, el apuntado rápido. Arco: el modo de apuntado.", "弩：轻点为瞄准镜；按住为快速瞄准。弓：瞄准模式。"},
+    {"ShowRangedSpecial", "A bowgun's crouching fire. A bow applies its coating.", "El fuego agachado de la ballesta. El arco aplica su capa.", "弩为蹲射。弓为涂装。"},
+    {"ShowAmmo", "Change the ammo or the coating. A swipe up or down on the item bar does it too.", "Cambian la munición o la capa. También se puede deslizar hacia arriba o abajo sobre la barra de ítems.", "更换弹药或涂装。在道具栏上向上或向下滑动也可。"},
+    {"ShowItemArrows", "Arrows beside the item bar. A swipe on the bar turns it too.", "Flechas a los lados de la barra de ítems. Deslizar sobre la barra también la gira.", "道具栏旁的箭头。在道具栏上滑动也能切换。"},
     {"StickRun", "On: push the movement stick past its edge to run, as before. Slide it up onto the small circle with a padlock that shows above it, which lights up, and lift your thumb there: the run locks and the hunter keeps running forward (steer with the camera), until you touch the stick or the circle again, draw the weapon or open a menu. Off: the stick only walks, and a Run button shows above the attacks instead: it runs while held.",
-     "Activado: empuja la palanca de movimiento más allá de su borde para correr, como siempre. Deslízala hacia arriba hasta el círculo chico con un candado que aparece encima, que se ilumina, y levanta el pulgar ahí: la carrera se fija y el cazador sigue corriendo hacia adelante (giras con la cámara), hasta que vuelvas a tocar la palanca o el círculo, desenvaines o abras un menú. Desactivado: la palanca solo camina, y aparece un botón Correr sobre los ataques: corre mientras lo mantienes."},
+     "Activado: empuja la palanca de movimiento más allá de su borde para correr, como siempre. Deslízala hacia arriba hasta el círculo chico con un candado que aparece encima, que se ilumina, y levanta el pulgar ahí: la carrera se fija y el cazador sigue corriendo hacia adelante (giras con la cámara), hasta que vuelvas a tocar la palanca o el círculo, desenvaines o abras un menú. Desactivado: la palanca solo camina, y aparece un botón Correr sobre los ataques: corre mientras lo mantienes.", "开：把移动摇杆推到边缘外即可奔跑，与之前相同。把它向上滑到上方显示的小圆环（带锁形图标，会亮起）上，并在那里抬起拇指：奔跑锁定，猎人继续向前跑（用镜头转向），直到你再次触碰摇杆或圆环、拔出武器或打开菜单。关：摇杆只能走，攻击键上方会显示奔跑按键：按住时奔跑。"},
     {"GuardSlide", "On: with the weapon out, a thumb that lands on Guard and slides onto the attacks keeps guarding (R held), for the moves that need R and an attack together, like a lance's counter or a shield's thrust; slid onto the item bar, it presses R and Y together. Off: the slide lets go of R.",
-     "Activado: con el arma desenvainada, un pulgar que se apoya en Guardia (R) y se desliza a los ataques sigue en guardia (R mantenido), para los movimientos que piden R junto con un ataque, como el contraataque de la lanza o el empujón del escudo; deslizado a la barra de ítems, aprieta R e Y juntos. Desactivado: al deslizar se suelta R."},
-    {"UIAnchor", "On a screen wider than 16:9, where the HUD goes.", "En una pantalla más ancha que 16:9, dónde va el HUD."},
+     "Activado: con el arma desenvainada, un pulgar que se apoya en Guardia (R) y se desliza a los ataques sigue en guardia (R mantenido), para los movimientos que piden R junto con un ataque, como el contraataque de la lanza o el empujón del escudo; deslizado a la barra de ítems, aprieta R e Y juntos. Desactivado: al deslizar se suelta R.", "开：武器出鞘时，拇指落在防御上再滑到攻击键，仍保持防御（按住 R），用于需要 R 与攻击同时按下的招式，例如长枪的反击或片手剑的盾击；滑到道具栏则相当于同时按下 R 和 Y。关：滑动会松开 R。"},
+    {"UIAnchor", "On a screen wider than 16:9, where the HUD goes.", "En una pantalla más ancha que 16:9, dónde va el HUD.", "屏幕比 16:9 更宽时 HUD 的摆放位置。"},
     {"FillScreen", "Movies and menu backdrops fill the screen, with a little cut above and below, instead of bars at the sides.",
-     "Los videos y los fondos de los menús llenan la pantalla, con un pequeño recorte arriba y abajo, en lugar de barras a los costados."},
+     "Los videos y los fondos de los menús llenan la pantalla, con un pequeño recorte arriba y abajo, en lugar de barras a los costados.", "影像和菜单背景铺满屏幕，上下略作裁切，而不是两侧留黑边。"},
     {"FPS", "The most frames a second. A lower limit heats the phone less and saves battery.",
-     "El máximo de cuadros por segundo. Un límite más bajo calienta menos el teléfono y gasta menos batería."},
-    {"ShowStats", "Shows the frame rate and the phone's temperature on the screen.", "Muestra los FPS y la temperatura del teléfono en la pantalla."},
-    {"MSAA", "Smooths the edges of 3D models. It asks more of the GPU.", "Suaviza los bordes de los modelos 3D. Exige más a la GPU."},
+     "El máximo de cuadros por segundo. Un límite más bajo calienta menos el teléfono y gasta menos batería.", "每秒最多帧数。上限越低，手机发热越少、越省电。"},
+    {"ShowStats", "Shows the frame rate and the phone's temperature on the screen.", "Muestra los FPS y la temperatura del teléfono en la pantalla.", "在屏幕上显示帧率和手机温度。"},
+    {"MSAA", "Smooths the edges of 3D models. It asks more of the GPU.", "Suaviza los bordes de los modelos 3D. Exige más a la GPU.", "平滑 3D 模型的边缘。更耗 GPU。"},
     {"FXAA", "Smooths the edges of the whole picture. On Mali GPUs it can leave a green line at the edge of the screen.",
-     "Suaviza los bordes de toda la imagen. En GPU Mali puede dejar una línea verde al borde de la pantalla."},
+     "Suaviza los bordes de toda la imagen. En GPU Mali puede dejar una línea verde al borde de la pantalla.", "平滑整幅画面的边缘。在 Mali GPU 上可能在屏幕边缘留下一条绿线。"},
     {"DrawDistance", "How far away people in towns are drawn: 1 is the game's distance, 2 twice as far, 0 no limit.",
-     "Hasta qué distancia se dibuja a la gente en los pueblos: 1 es la distancia del juego, 2 el doble, 0 sin límite."},
-    {"Volume", "The game's volume.", "El volumen del juego."},
-    {"FSR", "Rebuilds the picture from a lower resolution. It needs a Vulkan 1.2 GPU.", "Reconstruye la imagen desde una resolución menor. Necesita una GPU con Vulkan 1.2."},
-    {"FSRQuality", "How low the resolution goes before the picture is rebuilt.", "Cuánto baja la resolución antes de reconstruir la imagen."},
-    {"Sharpness", "How sharp FSR leaves the picture.", "Qué tan nítida deja FSR la imagen."},
+     "Hasta qué distancia se dibuja a la gente en los pueblos: 1 es la distancia del juego, 2 el doble, 0 sin límite.", "城镇中人物的绘制距离：1 为游戏原本的距离，2 为两倍，0 为不限。"},
+    {"Volume", "The game's volume.", "El volumen del juego.", "游戏的音量。"},
+    {"FSR", "Rebuilds the picture from a lower resolution. It needs a Vulkan 1.2 GPU.", "Reconstruye la imagen desde una resolución menor. Necesita una GPU con Vulkan 1.2.", "以较低分辨率重建画面。需要支持 Vulkan 1.2 的 GPU。"},
+    {"FSRQuality", "How low the resolution goes before the picture is rebuilt.", "Cuánto baja la resolución antes de reconstruir la imagen.", "画面重建前分辨率降低的幅度。"},
+    {"Sharpness", "How sharp FSR leaves the picture.", "Qué tan nítida deja FSR la imagen.", "FSR 处理后画面的锐利程度。"},
     {"FaceButtons", "How A, B, X and Y are read on a controller. Position: as on the Switch. Label: by the letter printed on the button.",
-     "Cómo se leen A, B, X e Y en un mando. Posición: como en la Switch. Etiqueta: según la letra impresa en el botón."},
+     "Cómo se leen A, B, X e Y en un mando. Posición: como en la Switch. Etiqueta: según la letra impresa en el botón.", "手柄上 A、B、X、Y 的识别方式。位置：与 Switch 相同。标签：按按键上印的字母。"},
     {"Controls", "Auto: they show while no controller is connected. Never: only the settings button stays.",
-     "Automático: se ven mientras no haya un mando conectado. Nunca: solo queda el botón de opciones."},
-    {"MoveHUD", "On: with the touch controls the HUD has an arrangement of its own, out of your thumbs' way. Off: the same HUD as without them.", "Activado: con los controles táctiles el HUD tiene un acomodo propio, lejos de los pulgares. Desactivado: el mismo HUD que sin ellos."},
-    {"CameraSpeed", "How far the camera turns for a drag.", "Cuánto gira la cámara al arrastrar."},
-    {"Opacity", "How solid the touch controls look.", "Qué tan sólidos se ven los controles táctiles."},
-    {"Vibration", "A short vibration when you press a touch control.", "Una vibración corta al tocar un control."},
-    {"PhoneRumble", "The game's rumble on the phone too, with or without a controller.", "La vibración del juego también en el teléfono, con o sin mando."},
-    {"Port", "The port for local play hubs. Everyone must use the same one.", "El puerto de las salas de juego local. Todos deben usar el mismo."},
+     "Automático: se ven mientras no haya un mando conectado. Nunca: solo queda el botón de opciones.", "触屏按键。自动：未连接手柄时显示。从不：只保留设置按键。"},
+    {"MoveHUD", "On: with the touch controls the HUD has an arrangement of its own, out of your thumbs' way. Off: the same HUD as without them.", "Activado: con los controles táctiles el HUD tiene un acomodo propio, lejos de los pulgares. Desactivado: el mismo HUD que sin ellos.", "开：使用触屏按键时，HUD 有专用布局，避开你的拇指。关：与没有触屏按键时相同的 HUD。"},
+    {"CameraSpeed", "How far the camera turns for a drag.", "Cuánto gira la cámara al arrastrar.", "拖动屏幕时镜头转动的幅度。"},
+    {"Opacity", "How solid the touch controls look.", "Qué tan sólidos se ven los controles táctiles.", "触屏按键的不透明度。"},
+    {"Vibration", "A short vibration when you press a touch control.", "Una vibración corta al tocar un control.", "按下触屏按键时的短促振动。"},
+    {"PhoneRumble", "The game's rumble on the phone too, with or without a controller.", "La vibración del juego también en el teléfono, con o sin mando.", "游戏的震动也交给手机，无论是否连接手柄。"},
+    {"Port", "The port for local play hubs. Everyone must use the same one.", "El puerto de las salas de juego local. Todos deben usar el mismo.", "本地联机集会所使用的端口。所有人必须一致。"},
     {"SyncSmallMonsters", "Small monsters are the same for every player. Experimental: they may stop attacking.",
-     "Los monstruos pequeños son los mismos para todos los jugadores. Experimental: pueden dejar de atacar."},
+     "Los monstruos pequeños son los mismos para todos los jugadores. Experimental: pueden dejar de atacar.", "小型怪物对每位玩家保持一致。实验性：它们可能停止攻击。"},
     {"VillageQuestsInHub", "In the Hub, L or R while choosing a quest shows the Village quests, to play them with others.",
-     "En el Hub, L o R al elegir una misión muestra las de la aldea, para jugarlas con otros."},
+     "En el Hub, L o R al elegir una misión muestra las de la aldea, para jugarlas con otros.", "在集会所选择任务时，按 L 或 R 可显示村庄任务，以便与他人一起游玩。"},
     {"HubHP", "A Village quest played in the Hub first multiplies the monster's health by this.",
-     "Una misión de la aldea jugada en el Hub primero multiplica la vida del monstruo por este valor."},
-    {"Language", "The language of this menu.", "El idioma de este menú."},
-    {"MenuScale", "The size of this menu, 50 % to 200 %.", "El tamaño de este menú, de 50 % a 200 %."},
-    {"Theme", "The colours of this menu.", "Los colores de este menú."},
-    {"PauseInBackground", "The game stops while you are out of the app.", "El juego se detiene mientras estás fuera de la app."},
+     "Una misión de la aldea jugada en el Hub primero multiplica la vida del monstruo por este valor.", "在集会所开始的村庄任务，会先把怪物的体力乘以这个数值。"},
+    {"Language", "The language of this menu.", "El idioma de este menú.", "此菜单的语言。"},
+    {"MenuScale", "The size of this menu, 50 % to 200 %.", "El tamaño de este menú, de 50 % a 200 %.", "此菜单的大小，50% 到 200%。"},
+    {"Theme", "The colours of this menu.", "Los colores de este menú.", "此菜单的配色。"},
+    {"PauseInBackground", "The game stops while you are out of the app.", "El juego se detiene mientras estás fuera de la app.", "离开应用时游戏暂停。"},
     {"PauseInMenu", "The game waits while this menu is open, when you play alone. With others online or in Local Play it goes on.",
-     "El juego espera mientras este menú está abierto, cuando juegas solo. Con otros, en línea o en juego local, sigue."},
+     "El juego espera mientras este menú está abierto, cuando juegas solo. Con otros, en línea o en juego local, sigue.", "单人游玩时，此菜单打开期间游戏暂停。与人在线或本地联机时照常进行。"},
     {"BonusContent", "Copies the free downloadable content (event quests, item packs, Palicoes) to a save that has not received it yet.",
-     "Copia el contenido descargable gratuito (misiones de evento, packs de objetos, Palicoes) a una partida que todavía no lo recibió."},
+     "Copia el contenido descargable gratuito (misiones de evento, packs de objetos, Palicoes) a una partida que todavía no lo recibió.", "把免费特典内容（活动任务、道具包、随从猫）复制到尚未领取的存档。"},
     {"Updates", "At most once a day the app asks GitHub for the latest version (nothing else is sent) and tells you at the next start when there is a new one. It never downloads or installs anything by itself.",
-     "Como mucho una vez al día la app le pregunta a GitHub cuál es la última versión (no se envía nada más) y te avisa al abrir el juego cuando hay una nueva. Nunca descarga ni instala nada por su cuenta."},
+     "Como mucho una vez al día la app le pregunta a GitHub cuál es la última versión (no se envía nada más) y te avisa al abrir el juego cuando hay una nueva. Nunca descarga ni instala nada por su cuenta.", "每天最多一次，应用会向 GitHub 查询最新版本（不发送其他内容），并在下次启动时提示有新版本。它不会自行下载或安装任何内容。"},
 };
 #endif
 std::string help_text(const Row &r) {
@@ -3049,7 +3052,10 @@ std::string help_text(const Row &r) {
         return r.help;
 #ifdef __ANDROID__
     for (const PhoneHelp &h : PHONE_HELP)
-        if (r.key == h.key) return s.draft.language == 1 ? h.es : h.en;
+        if (r.key == h.key) {
+            const char *text = s.draft.language == 2 ? h.zh : s.draft.language == 1 ? h.es : h.en;
+            return text ? text : h.en;  // (not translated yet: the English stays)
+        }
 #endif
     static std::vector<std::pair<std::string, std::string>> cache;  // (key, help in English)
     auto at = std::find_if(cache.begin(), cache.end(), [&](const auto &e) { return e.first == r.key; });
@@ -3064,6 +3070,8 @@ std::string help_text(const Row &r) {
         if (j == std::string::npos)
             j = at->second.size();
         line = at->second.substr(i, j - i);
+        // (config_help() adds the setting's default as a line of its own: "Default: Center")
+        if (s.draft.language == 2 && line.rfind("Default: ", 0) == 0) line = "默认：" + line.substr(9);
         out += (out.empty() ? "" : "\n") + std::string(tr(line.c_str()));
     }
     return out;
