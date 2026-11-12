@@ -8,7 +8,7 @@ your device. Both use the same game folder, which you make once from your own co
 
 Made with Claude Code (Opus 5.5). Many of the decisions were my own, because AI isn't ready to have the final say on something like this.
 
-[Lee esta guía en español](README.es.md)
+[Lee esta guía en español](README.es.md) · [中文说明](README.zh.md)
 
 The newest version is on [Releases](../../releases/latest): the APK for Android and `MHGU-PC-<version>.zip` for PC.
 Talk with other players and ask for help in the community's [Discord](https://discord.gg/sk5xEjEMwF).
