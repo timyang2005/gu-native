@@ -39,13 +39,13 @@ public class LicensesActivity extends Activity {
         LinearLayout top = new LinearLayout(this);
         top.setGravity(Gravity.CENTER_VERTICAL);
         TextView title = new TextView(this);
-        title.setText(es ? "LICENCIAS" : "LICENSES");
+        title.setText(Look.zh() ? "许可" : es ? "LICENCIAS" : "LICENSES");
         title.setTextColor(GOLD);
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         title.setTypeface(Typeface.DEFAULT_BOLD);
         top.addView(title, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
         Button close = new Button(this);
-        close.setText(es ? "Cerrar" : "Close");
+        close.setText(Look.zh() ? "关闭" : es ? "Cerrar" : "Close");
         close.setAllCaps(false);
         close.setTextColor(CREAM);
         GradientDrawable face = new GradientDrawable();

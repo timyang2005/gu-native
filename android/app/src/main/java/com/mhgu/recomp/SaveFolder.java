@@ -124,9 +124,9 @@ final class SaveFolder {
 
     /** "KHORNE, Anbernic · saved 2026-11-09 18:30", or "no save". */
     static String line(Info i, boolean es) {
-        if (!i.valid) return es ? "sin partida" : "no save";
-        String who = i.names.isEmpty() ? (es ? "una partida" : "a save") : i.names;
-        return who + (es ? " · guardada el " : " · saved ") + when(i.time);
+        if (!i.valid) return Look.zh() ? "无存档" : es ? "sin partida" : "no save";
+        String who = i.names.isEmpty() ? (Look.zh() ? "一份存档" : es ? "una partida" : "a save") : i.names;
+        return who + (Look.zh() ? " · 保存于 " : es ? " · guardada el " : " · saved ") + when(i.time);
     }
 
     // ---- choosing a folder
@@ -152,14 +152,14 @@ final class SaveFolder {
     static String refusal(Context c, File picked, boolean es) {
         String p = picked.getAbsolutePath();
         if (p.contains("/Android/data/") || p.endsWith("/Android/data") || p.contains("/Android/obb"))
-            return es ? "Esa carpeta es de una app y Android la mantiene cerrada. Elige otra."
+            return Look.zh() ? "该目录属于某个应用，Android 不允许访问。请选择其他目录。" : es ? "Esa carpeta es de una app y Android la mantiene cerrada. Elige otra."
                       : "That folder belongs to an app, and Android keeps it closed. Choose another one.";
         String own = home(c).getAbsolutePath();
         if (p.equals(own) || p.startsWith(own + "/"))
-            return es ? "Esa es la carpeta propia del juego. Elige otra, o usa \"Usar la carpeta propia del juego\"."
+            return Look.zh() ? "那是游戏自己的目录。请选择其他目录，或使用“使用游戏自己的目录”。" : es ? "Esa es la carpeta propia del juego. Elige otra, o usa \"Usar la carpeta propia del juego\"."
                       : "That is the game's own folder. Choose another one, or use \"Use the game's own folder\".";
         if (!picked.isDirectory() || AppHome.probe(picked) != 0)
-            return es ? "El juego no puede escribir en esa carpeta. Elige una en la memoria del teléfono."
+            return Look.zh() ? "游戏无法写入该目录。请选择手机存储中的目录。" : es ? "El juego no puede escribir en esa carpeta. Elige una en la memoria del teléfono."
                       : "The game can't write in that folder. Choose one in the phone's storage.";
         return null;
     }
@@ -205,8 +205,8 @@ final class SaveFolder {
         try {
             if (!path.isEmpty()) {
                 File to = new File(path);
-                if (!to.isDirectory() && !to.mkdirs()) throw new IOException(es ? "no se pudo crear " + to : "couldn't make " + to);
-                if (AppHome.probe(to) != 0) throw new IOException(es ? "no se puede escribir en " + to : "can't write in " + to);
+                if (!to.isDirectory() && !to.mkdirs()) throw new IOException(Look.zh() ? "无法创建 " + to : es ? "no se pudo crear " + to : "couldn't make " + to);
+                if (AppHome.probe(to) != 0) throw new IOException(Look.zh() ? "无法写入 " + to : es ? "no se puede escribir en " + to : "can't write in " + to);
                 Info there = describe(to), here = describe(from);
                 if (!to.equals(from)) {
                     if (!keepFolder || !there.valid) {
@@ -223,7 +223,7 @@ final class SaveFolder {
                 File own = local(c);
                 Info there = describe(now), here = describe(own);
                 if (keepFolder && there.valid) {
-                    if (!own.isDirectory() && !own.mkdirs()) throw new IOException(es ? "no se pudo crear " + own : "couldn't make " + own);
+                    if (!own.isDirectory() && !own.mkdirs()) throw new IOException(Look.zh() ? "无法创建 " + own : es ? "no se pudo crear " + own : "couldn't make " + own);
                     if (here.valid) backup(c, own, "device");
                     copySave(now, own);
                 }

@@ -172,12 +172,14 @@ final class Notices {
         SharedPreferences p = prefs(a);
         if (!official(a) && !mine.equals(p.getString("unofficial_seen", null))) {
             p.edit().putString("unofficial_seen", mine).apply();
-            Look.notice(a, es ? "ESTA NO ES LA VERSIÓN OFICIAL" : "THIS IS NOT THE OFFICIAL VERSION",
-                    es ? "Esta copia no está firmada por khorne-hub, así que no es la versión oficial: alguien la cambió o la "
+            Look.notice(a, Look.zh() ? "这不是官方版本" : es ? "ESTA NO ES LA VERSIÓN OFICIAL" : "THIS IS NOT THE OFFICIAL VERSION",
+                    Look.zh() ? "这个副本没有 khorne-hub 的签名，所以它不是官方版本：有人改动过它，或者重新签了名。"
+                         + "官方版本只在 github.com/khorne-hub/" + REPO + "。"
+                       : es ? "Esta copia no está firmada por khorne-hub, así que no es la versión oficial: alguien la cambió o la "
                          + "volvió a firmar. Las versiones oficiales están solo en github.com/khorne-hub/" + REPO + "."
                        : "This copy isn't signed by khorne-hub, so it isn't the official version: someone changed it or signed "
                          + "it again. The official versions are only at github.com/khorne-hub/" + REPO + ".",
-                    new Look.Choice(es ? "Continuar" : "Continue", true, () -> updateThen(a, then)));
+                    new Look.Choice(Look.zh() ? "继续" : es ? "Continuar" : "Continue", true, () -> updateThen(a, then)));
             return;
         }
         updateThen(a, then);
@@ -197,8 +199,12 @@ final class Notices {
         // (a copy signed by someone else: Android won't install the official one over it, and uninstalling it deletes the
         // save in Android/data, so the save is exported first)
         boolean over = official(a);
-        Look.notice(a, es ? "HAY UNA VERSIÓN NUEVA" : "A NEW VERSION IS OUT",
-                es ? "La versión " + v + " ya está disponible (tienes la " + mine + "). "
+        Look.notice(a, Look.zh() ? "有新版本" : es ? "HAY UNA VERSIÓN NUEVA" : "A NEW VERSION IS OUT",
+                Look.zh() ? "版本 " + v + " 已发布（你当前是 " + mine + "）。"
+                     + (over ? "它会覆盖安装到当前版本上：你的存档和设置都会保留。"
+                             : "这个副本不是官方版本，所以官方版无法覆盖安装。请先导出存档（设置，导出存档）；"
+                               + "然后卸载这个副本，安装官方版，再导入你的存档。")
+                   : es ? "La versión " + v + " ya está disponible (tienes la " + mine + "). "
                      + (over ? "Se instala encima de esta: tu partida y tus ajustes se quedan como están."
                              : "Esta copia no es la oficial, así que la oficial no se instala encima. Primero exporta tu partida "
                                + "(Opciones, Exportar partida); después desinstala esta copia, instala la oficial e importa tu partida.")
@@ -206,7 +212,7 @@ final class Notices {
                      + (over ? "It installs over this one: your save and your settings stay as they are."
                              : "This copy isn't the official one, so the official one won't install over it. First export your "
                                + "save (Settings, Export save); then uninstall this copy, install the official one and import your save."),
-                new Look.Choice(es ? "Ver" : "View", true, () -> {
+                new Look.Choice(Look.zh() ? "查看" : es ? "Ver" : "View", true, () -> {
                     try {
                         a.startActivity(new Intent(Intent.ACTION_VIEW,
                                 Uri.parse("https://github.com/khorne-hub/" + REPO + "/releases/latest")));
@@ -215,6 +221,6 @@ final class Notices {
                         then.run();
                     }
                 }),
-                new Look.Choice(es ? "Más tarde" : "Later", false, then));
+                new Look.Choice(Look.zh() ? "稍后" : es ? "Más tarde" : "Later", false, then));
     }
 }

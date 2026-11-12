@@ -88,12 +88,15 @@ public class LogShareActivity extends Activity {
         box.setOrientation(LinearLayout.VERTICAL);
         box.setPadding(dp(24), dp(16), dp(24), dp(18));
         box.setBackground(plate(WINE));
-        box.addView(text(crash ? (es ? "El juego se cerró por un error" : "The game stopped because of an error")
-                               : (es ? "Compartir registro" : "Share log"), 19, GOLD, true));
+        box.addView(text(crash ? (Look.zh() ? "游戏因错误而关闭" : es ? "El juego se cerró por un error" : "The game stopped because of an error")
+                               : (Look.zh() ? "分享日志" : es ? "Compartir registro" : "Share log"), 19, GOLD, true));
         LinearLayout.LayoutParams gap = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                                                                       LinearLayout.LayoutParams.WRAP_CONTENT);
         gap.setMargins(0, dp(12), 0, 0);
-        box.addView(text(es ? "El registro explica qué pasó y en qué teléfono. Puedes enviarlo a quien te esté ayudando: "
+        box.addView(text(Look.zh() ? "日志会说明发生了什么、是在哪台手机上。你可以把它发给正在帮你的人："
+                              + "会打开应用列表，由你选择发到哪里。日志里不含你的存档，但如果你玩过局域网联机，"
+                              + "可能会包含你本地网络的地址。"
+                            : es ? "El registro explica qué pasó y en qué teléfono. Puedes enviarlo a quien te esté ayudando: "
                               + "se abre la lista de apps y tú eliges a dónde va. No lleva tu partida, pero puede "
                               + "incluir la dirección de tu red local si jugaste en LAN."
                             : "The log says what happened and on which phone. You can send it to whoever is helping "
@@ -103,12 +106,12 @@ public class LogShareActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setGravity(Gravity.CENTER);
         row.setPadding(0, dp(18), 0, 0);
-        Button share = button(es ? "Compartir registro" : "Share log", true);
+        Button share = button(Look.zh() ? "分享日志" : es ? "Compartir registro" : "Share log", true);
         share.setOnClickListener(v -> share());
         LinearLayout.LayoutParams size = new LinearLayout.LayoutParams(dp(190), dp(46));
         size.setMargins(dp(8), 0, dp(8), 0);
         row.addView(share, size);
-        Button close = button(es ? "Cerrar" : "Close", false);
+        Button close = button(Look.zh() ? "关闭" : es ? "Cerrar" : "Close", false);
         close.setOnClickListener(v -> finish());
         row.addView(close, new LinearLayout.LayoutParams(size));
         box.addView(row);
@@ -142,7 +145,7 @@ public class LogShareActivity extends Activity {
         send.putExtra(Intent.EXTRA_STREAM, uri);
         send.setClipData(ClipData.newRawUri("MHGU log", uri));
         send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        startActivity(Intent.createChooser(send, es ? "Compartir registro" : "Share log"));
+        startActivity(Intent.createChooser(send, Look.zh() ? "分享日志" : es ? "Compartir registro" : "Share log"));
     }
 
     private static void append(OutputStream out, File log, String title) throws IOException {

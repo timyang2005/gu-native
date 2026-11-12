@@ -134,11 +134,17 @@ public class ImportActivity extends Activity {
         box.setOrientation(LinearLayout.VERTICAL);
         box.setPadding(dp(24), dp(14), dp(24), dp(16));
         box.setBackground(plate(WINE));
-        String[] titles = es ? new String[] {"TRUCOS", "MODS", "DLC"} : new String[] {"CHEATS", "MODS", "DLC"};
+        String[] titles = Look.zh() ? new String[] {"金手指", "模组", "DLC"} : es ? new String[] {"TRUCOS", "MODS", "DLC"} : new String[] {"CHEATS", "MODS", "DLC"};
         TextView title = text(titles[kind], 20, GOLD, true);
         title.setGravity(Gravity.CENTER);
         box.addView(title);
-        String[] bodies = es ? new String[] {
+        String[] bodies = Look.zh() ? new String[] {
+            "Atmosphere 格式的金手指 .txt 文件，适用于 1.4.0 版（其 build id 为 FB08F1D20FD1204F）。之后在金手指页面逐个开启。"
+                + "修改游戏代码的那些也能用，但对应的那部分游戏会运行得更慢。",
+            "包含 romfs 或 exefs 的模组文件夹，或该文件夹的 .zip。之后在模组页面排序并开启。"
+                + "代码补丁（exefs）也能用，但对应的那部分游戏会运行得更慢。",
+            "你自己的游戏 DLC：每个 DLC 的文件夹里都有一个 DLC.dlcp 文件。选择一个文件夹，里面的所有 DLC 都会被复制。"
+                + "之后在游戏里：主菜单，下载。此功能为实验性。"} : es ? new String[] {
             "Archivos .txt de trucos en el formato de Atmosphere, para la versión 1.4.0 (su id de compilación es "
                 + "FB08F1D20FD1204F). Después se activan uno por uno en la página Trucos. Los que cambian el código del juego "
                 + "funcionan, pero esa parte del juego corre más lenta.",
@@ -158,7 +164,7 @@ public class ImportActivity extends Activity {
         body.setLineSpacing(dp(1), 1);
         box.addView(body);
         // (where they go, which is also where they can be put by hand)
-        TextView where = text((es ? "También puedes copiarlos tú a esta carpeta del teléfono: "
+        TextView where = text((Look.zh() ? "你也可以自己把它们复制到手机的以下文件夹：" : es ? "También puedes copiarlos tú a esta carpeta del teléfono: "
                                   : "You can also copy them yourself into this folder on the phone: ") + target().getAbsolutePath(),
                 13, GOLD, false);
         where.setPadding(0, 0, 0, dp(10));
@@ -174,14 +180,14 @@ public class ImportActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setGravity(Gravity.CENTER);
         row.setPadding(0, dp(12), 0, 0);
-        String[] adds = es ? new String[] {"Agregar trucos", "Agregar un mod", "Agregar DLC"}
+        String[] adds = Look.zh() ? new String[] {"添加金手指", "添加模组", "添加 DLC"} : es ? new String[] {"Agregar trucos", "Agregar un mod", "Agregar DLC"}
                            : new String[] {"Add cheats", "Add a mod", "Add DLC"};
         add = button(adds[kind], true, BRONZE);
         add.setOnClickListener(v -> openBrowser(null));
         LinearLayout.LayoutParams size = new LinearLayout.LayoutParams(dp(190), dp(46));
         size.setMargins(dp(8), 0, dp(8), 0);
         row.addView(add, size);
-        closeButton = button(es ? "Cerrar" : "Close", false, BRONZE);
+        closeButton = button(Look.zh() ? "关闭" : es ? "Cerrar" : "Close", false, BRONZE);
         closeButton.setOnClickListener(v -> {
             if (busy) return;
             if (changed) restart();
@@ -214,7 +220,7 @@ public class ImportActivity extends Activity {
         File[] all = target().listFiles(f -> !f.getName().startsWith("_") && !f.getName().startsWith(".")
                 && (kind == CHEATS ? f.isFile() && f.getName().toLowerCase(Locale.ROOT).endsWith(".txt") : f.isDirectory()));
         if (all == null || all.length == 0) {
-            TextView none = text(es ? "(nada instalado todavía)" : "(nothing installed yet)", 13, CREAM, false);
+            TextView none = text(Look.zh() ? "（尚未安装任何内容）" : es ? "(nada instalado todavía)" : "(nothing installed yet)", 13, CREAM, false);
             none.setGravity(Gravity.CENTER);
             list.addView(none);
             return;
@@ -226,7 +232,7 @@ public class ImportActivity extends Activity {
             TextView name = text("◆  " + f.getName(), 14, CREAM, false);
             name.setSingleLine(true);
             row.addView(name, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-            Button remove = button(es ? "Quitar" : "Remove", false, BRONZE);
+            Button remove = button(Look.zh() ? "移除" : es ? "Quitar" : "Remove", false, BRONZE);
             remove.setOnClickListener(v -> {
                 if (busy) return;
                 delete(f);
@@ -242,7 +248,7 @@ public class ImportActivity extends Activity {
 
     private void changed() {
         changed = true;
-        closeButton.setText(es ? "Reiniciar el juego" : "Restart the game");
+        closeButton.setText(Look.zh() ? "重启游戏" : es ? "Reiniciar el juego" : "Restart the game");
     }
 
     /** Back to the game through PhoenixActivity: these are read at the start. */
@@ -296,7 +302,7 @@ public class ImportActivity extends Activity {
         box.setOrientation(LinearLayout.VERTICAL);
         box.setBackground(plate(PANEL));
         box.setPadding(dp(12), dp(12), dp(12), dp(12));
-        String[] heads = es ? new String[] {"ELIGE UN ARCHIVO DE TRUCOS", "ELIGE LA CARPETA DEL MOD O SU .ZIP", "ELIGE LA CARPETA DE TUS DLC"}
+        String[] heads = Look.zh() ? new String[] {"选择金手指文件", "选择模组文件夹或其 .ZIP", "选择你的 DLC 文件夹"} : es ? new String[] {"ELIGE UN ARCHIVO DE TRUCOS", "ELIGE LA CARPETA DEL MOD O SU .ZIP", "ELIGE LA CARPETA DE TUS DLC"}
                             : new String[] {"CHOOSE A CHEAT FILE", "CHOOSE THE MOD'S FOLDER OR ITS .ZIP", "CHOOSE YOUR DLC'S FOLDER"};
         TextView title = text(heads[kind], 16, GOLD, true);
         title.setGravity(Gravity.CENTER);
@@ -308,7 +314,7 @@ public class ImportActivity extends Activity {
         for (File r : roots) if (dir.getAbsolutePath().startsWith(r.getAbsolutePath())) root = r;
         for (int i = 0; i < roots.size(); i++) {
             File r = roots.get(i);
-            Button t = button(i == 0 ? (es ? "Memoria interna" : "Phone storage") : (es ? "Tarjeta SD" : "SD card"), r.equals(root), r.equals(root) ? LIT : BRONZE);
+            Button t = button(i == 0 ? (Look.zh() ? "手机存储" : es ? "Memoria interna" : "Phone storage") : (Look.zh() ? "SD 卡" : es ? "Tarjeta SD" : "SD card"), r.equals(root), r.equals(root) ? LIT : BRONZE);
             t.setOnClickListener(v -> openBrowser(r));
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(40));
             lp.setMargins(dp(4), dp(6), dp(4), dp(4));
@@ -323,7 +329,7 @@ public class ImportActivity extends Activity {
         items.setOrientation(LinearLayout.VERTICAL);
         final File here = dir;
         if (!dir.equals(root)) {
-            Button up = button("⬑  " + (es ? "Subir" : "Up"), false, BRONZE);
+            Button up = button("⬑  " + (Look.zh() ? "上一级" : es ? "Subir" : "Up"), false, BRONZE);
             up.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
             up.setOnClickListener(v -> openBrowser(here.getParentFile()));
             items.addView(up, rowParams());
@@ -345,7 +351,7 @@ public class ImportActivity extends Activity {
             }
         }
         if (kids == null || kids.length == 0) {
-            TextView none = text(es ? "(vacío)" : "(empty)", 13, CREAM, false);
+            TextView none = text(Look.zh() ? "（空）" : es ? "(vacío)" : "(empty)", 13, CREAM, false);
             none.setPadding(dp(6), dp(8), dp(6), dp(8));
             items.addView(none);
         }
@@ -356,13 +362,13 @@ public class ImportActivity extends Activity {
         row.setGravity(Gravity.CENTER);
         row.setPadding(0, dp(8), 0, 0);
         if (kind != CHEATS) {  // (a folder: the mod itself, or where the DLC are)
-            Button use = button(es ? "Usar esta carpeta" : "Use this folder", true, BRONZE);
+            Button use = button(Look.zh() ? "使用此文件夹" : es ? "Usar esta carpeta" : "Use this folder", true, BRONZE);
             use.setOnClickListener(v -> { browser.dismiss(); start(here); });
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(44));
             lp.setMargins(dp(5), 0, dp(5), 0);
             row.addView(use, lp);
         }
-        Button cancel = button(es ? "Cancelar" : "Cancel", false, BRONZE);
+        Button cancel = button(Look.zh() ? "取消" : es ? "Cancelar" : "Cancel", false, BRONZE);
         cancel.setOnClickListener(v -> browser.dismiss());
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(44));
         lp.setMargins(dp(5), 0, dp(5), 0);
@@ -386,7 +392,7 @@ public class ImportActivity extends Activity {
     private void start(File from) {
         busy = true;
         add.setEnabled(false);
-        say(es ? "Copiando…" : "Copying…", false);
+        say(Look.zh() ? "正在复制…" : es ? "Copiando…" : "Copying…", false);
         new Thread(() -> {
             String done, error = null;
             try {
@@ -402,9 +408,9 @@ public class ImportActivity extends Activity {
                 add.setEnabled(true);
                 if (ok != null) {
                     changed();
-                    say((es ? "Listo: " : "Done: ") + ok + (es ? ". Se aplica al reiniciar el juego." : ". It applies when the game restarts."), false);
+                    say((Look.zh() ? "完成：" : es ? "Listo: " : "Done: ") + ok + (Look.zh() ? "，重启游戏后生效。" : es ? ". Se aplica al reiniciar el juego." : ". It applies when the game restarts."), false);
                 } else {
-                    say((es ? "No se pudo: " : "It couldn't be done: ") + why, true);
+                    say((Look.zh() ? "失败：" : es ? "No se pudo: " : "It couldn't be done: ") + why, true);
                 }
                 refresh();
             });
@@ -413,7 +419,7 @@ public class ImportActivity extends Activity {
 
     private void progress() {
         long c = copied, t = total;
-        runOnUiThread(() -> say((es ? "Copiando… " : "Copying… ") + (t > 0 ? (c * 100 / t) + " %" : (c >> 20) + " MB"), false));
+        runOnUiThread(() -> say((Look.zh() ? "正在复制… " : es ? "Copiando… " : "Copying… ") + (t > 0 ? (c * 100 / t) + " %" : (c >> 20) + " MB"), false));
     }
 
     private void copyFile(File from, File to) throws IOException {
@@ -507,13 +513,13 @@ public class ImportActivity extends Activity {
                     try (OutputStream o = new FileOutputStream(out)) { copyStream(z, o); }
                 }
             }
-            if (!hasModParts(tmp, 0)) { delete(tmp); throw new IOException(es ? "el .zip no trae romfs ni exefs" : "the .zip has no romfs or exefs"); }
+            if (!hasModParts(tmp, 0)) { delete(tmp); throw new IOException(Look.zh() ? "这个 .zip 里没有 romfs 或 exefs" : es ? "el .zip no trae romfs ni exefs" : "the .zip has no romfs or exefs"); }
             delete(to);
             if (!tmp.renameTo(to)) throw new IOException("can't write " + name);
             return name;
         }
         if (!hasModParts(from, 0))
-            throw new IOException(es ? "esa carpeta no tiene romfs ni exefs adentro" : "that folder has no romfs or exefs in it");
+            throw new IOException(Look.zh() ? "该文件夹里没有 romfs 或 exefs" : es ? "esa carpeta no tiene romfs ni exefs adentro" : "that folder has no romfs or exefs in it");
         String name = safeName(base);
         File to = new File(target(), name), tmp = new File(target(), ".new");
         delete(tmp);
@@ -538,7 +544,7 @@ public class ImportActivity extends Activity {
         File start = from.isFile() ? from.getParentFile() : from;
         List<File> found = new ArrayList<>();
         findDlc(start, 0, found);
-        if (found.isEmpty()) throw new IOException(es ? "no hay ningún DLC.dlcp en esa carpeta" : "there is no DLC.dlcp in that folder");
+        if (found.isEmpty()) throw new IOException(Look.zh() ? "该文件夹里没有 DLC.dlcp" : es ? "no hay ningún DLC.dlcp en esa carpeta" : "there is no DLC.dlcp in that folder");
         total = 0;
         for (File d : found) total += sizeOf(d);
         int n = 0, next = 1;
@@ -559,6 +565,6 @@ public class ImportActivity extends Activity {
             copyTree(d, to);
             n++;
         }
-        return n + (es ? (n == 1 ? " DLC copiado" : " DLC copiados") : " DLC copied");
+        return n + (Look.zh() ? " 个 DLC 已复制" : es ? (n == 1 ? " DLC copiado" : " DLC copiados") : " DLC copied");
     }
 }

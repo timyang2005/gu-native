@@ -101,8 +101,8 @@ final class FolderBrowser {
         if (!dir.getAbsolutePath().startsWith(root.getAbsolutePath())) dir = root;  // (on a card not offered: the phone's)
         for (int i = 0; i < roots.size(); i++) {
             File r = roots.get(i);
-            Button t = Look.button(a, i == 0 ? (es ? "Memoria interna" : "Phone storage")
-                                             : (es ? "Tarjeta SD" : "SD card") + (roots.size() > 2 ? " " + i : ""), r.equals(root));
+            Button t = Look.button(a, i == 0 ? (Look.zh() ? "手机存储" : es ? "Memoria interna" : "Phone storage")
+                                             : (Look.zh() ? "SD 卡" : es ? "Tarjeta SD" : "SD card") + (roots.size() > 2 ? " " + i : ""), r.equals(root));
             t.setOnClickListener(v -> { d.dismiss(); open(a, r, title, mark, hint, use, system, writable); });
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, Look.dp(a, 40));
             lp.setMargins(Look.dp(a, 4), Look.dp(a, 6), Look.dp(a, 4), Look.dp(a, 4));
@@ -122,7 +122,7 @@ final class FolderBrowser {
         list.setOrientation(LinearLayout.VERTICAL);
         final File here = dir;
         if (!dir.equals(root)) {
-            Button up = Look.button(a, "⬑  " + (es ? "Subir" : "Up"), false);
+            Button up = Look.button(a, "⬑  " + (Look.zh() ? "上一级" : es ? "Subir" : "Up"), false);
             up.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
             up.setOnClickListener(v -> { d.dismiss(); open(a, here.getParentFile(), title, mark, hint, use, system, writable); });
             list.addView(up, rowParams(a));
@@ -139,7 +139,7 @@ final class FolderBrowser {
             }
         }
         if (kids == null || kids.length == 0) {
-            TextView none = Look.text(a, es ? "(no hay carpetas)" : "(no folders)", 13, Look.CREAM, false);
+            TextView none = Look.text(a, Look.zh() ? "(没有目录)" : es ? "(no hay carpetas)" : "(no folders)", 13, Look.CREAM, false);
             none.setPadding(Look.dp(a, 6), Look.dp(a, 8), Look.dp(a, 6), Look.dp(a, 8));
             list.addView(none);
         }
@@ -150,15 +150,15 @@ final class FolderBrowser {
         LinearLayout row = new LinearLayout(a);
         row.setGravity(Gravity.CENTER);
         row.setPadding(0, Look.dp(a, 8), 0, 0);
-        Button ok = Look.button(a, es ? "Usar esta carpeta" : "Use this folder", true);
+        Button ok = Look.button(a, Look.zh() ? "使用此目录" : es ? "Usar esta carpeta" : "Use this folder", true);
         ok.setOnClickListener(v -> { d.dismiss(); use.folder(here); });
         row.addView(ok, buttonParams(a));
         if (system != null) {
-            Button other = Look.button(a, es ? "Selector de Android" : "Android's picker", false);
+            Button other = Look.button(a, Look.zh() ? "系统的选择器" : es ? "Selector de Android" : "Android's picker", false);
             other.setOnClickListener(v -> { d.dismiss(); system.run(); });
             row.addView(other, buttonParams(a));
         }
-        Button cancel = Look.button(a, es ? "Cancelar" : "Cancel", false);
+        Button cancel = Look.button(a, Look.zh() ? "取消" : es ? "Cancelar" : "Cancel", false);
         cancel.setOnClickListener(v -> d.dismiss());
         row.addView(cancel, buttonParams(a));
         box.addView(row);

@@ -108,8 +108,8 @@ public class GameFolderActivity extends Activity {
         } else if (chosen != null && !change) {
             status.setTextColor(ALERT);
             status.setText(hasAccess()
-                    ? (es ? "Ya no se encuentra la carpeta " + chosen + ". Elige dónde está ahora." : "The folder " + chosen + " is gone. Choose where it is now.")
-                    : (es ? "El juego perdió el permiso para leer la carpeta. Vuelve a darlo." : "The game lost its permission to read the folder. Please give it again."));
+                    ? (Look.zh() ? "找不到文件夹 " + chosen + " 了。请选择它现在的位置。" : es ? "Ya no se encuentra la carpeta " + chosen + ". Elige dónde está ahora." : "The folder " + chosen + " is gone. Choose where it is now.")
+                    : (Look.zh() ? "游戏失去了读取该目录的权限。请重新授予。" : es ? "El juego perdió el permiso para leer la carpeta. Vuelve a darlo." : "The game lost its permission to read the folder. Please give it again."));
         }
     }
 
@@ -146,8 +146,8 @@ public class GameFolderActivity extends Activity {
         }
         String moved = AppHome.movedNotice(this);
         if (moved != null) {
-            Look.notice(this, es ? "EL JUEGO USA SU CARPETA PRIVADA" : "THE GAME USES ITS PRIVATE FOLDER",
-                    es ? "Otra app (un administrador de archivos, por ejemplo con Shizuku) creó la carpeta del juego, " + moved
+            Look.notice(this, Look.zh() ? "游戏使用的是私有目录" : es ? "EL JUEGO USA SU CARPETA PRIVADA" : "THE GAME USES ITS PRIVATE FOLDER",
+                    Look.zh() ? "另一个应用（例如通过 Shizuku 的文件管理器）创建了游戏目录 " + moved + "，Android 不允许游戏写入其中。所以游戏把设置、日志和存档保存在自己的私有目录里，并把能读到的内容复制了过去。要把存档带到别处，请使用“设置”里的“导出存档”或“存档目录”。" : es ? "Otra app (un administrador de archivos, por ejemplo con Shizuku) creó la carpeta del juego, " + moved
                          + ", y Android no deja que el juego escriba en ella. Así que el juego guarda sus ajustes, su registro y "
                          + "tu partida en su carpeta privada, y copió ahí lo que pudo leer. Para llevar tu partida a otro lado usa "
                          + "Ajustes, Exportar partida o Carpeta de partidas."
@@ -155,7 +155,7 @@ public class GameFolderActivity extends Activity {
                          + "Android won't let the game write in it. So the game keeps its settings, its log and your save in its "
                          + "private folder, and copied there what it could read. To take your save elsewhere, use Settings, "
                          + "Export save or Save folder.",
-                    new Look.Choice(es ? "Continuar" : "Continue", true, this::proceed));
+                    new Look.Choice(Look.zh() ? "继续" : es ? "Continuar" : "Continue", true, this::proceed));
             return;
         }
         SaveFolderActivity.gate(this, () -> Notices.beforeGame(this, this::startGame));
@@ -198,14 +198,14 @@ public class GameFolderActivity extends Activity {
     /** The folder as it must look: folders in gold, what goes in them in cream. */
     private CharSequence tree() {
         String[] lines = {
-            es ? "Tu carpeta" : "Your folder",
+            Look.zh() ? "你的目录" : es ? "Tu carpeta" : "Your folder",
             "├─ exefs",
             "│    main",
             "│    main.npdm",
             "│    rtld, sdk, subsdk0",
             "├─ romfs",
             "│    nativeNX",
-            es ? "│    ... 35.500 archivos" : "│    ... 35,500 files",
+            Look.zh() ? "│    ... 35,500 个文件" : es ? "│    ... 35.500 archivos" : "│    ... 35,500 files",
             "├─ libmhgugame.so",
             "└─ libmhgugame.id",
         };
@@ -226,10 +226,10 @@ public class GameFolderActivity extends Activity {
         page.setOrientation(LinearLayout.VERTICAL);
         page.setPadding(pad * 2, pad, pad * 2, pad);
 
-        TextView title = text(es ? "ARCHIVOS DEL JUEGO" : "GAME FILES", 20, GOLD, true);
+        TextView title = text(Look.zh() ? "游戏文件" : es ? "ARCHIVOS DEL JUEGO" : "GAME FILES", 20, GOLD, true);
         title.setGravity(Gravity.CENTER);
         page.addView(title);
-        TextView intro = text(es ? "Elige la carpeta donde tienes tu copia del juego. Se lee desde ahí: no se copia nada."
+        TextView intro = text(Look.zh() ? "选择存放你游戏副本的目录。游戏直接从那里读取，不会复制任何东西。" : es ? "Elige la carpeta donde tienes tu copia del juego. Se lee desde ahí: no se copia nada."
                                  : "Choose the folder that holds your copy of the game. It is read from there: nothing is copied.",
                 14, CREAM, false);
         intro.setGravity(Gravity.CENTER);
@@ -243,7 +243,7 @@ public class GameFolderActivity extends Activity {
         left.setOrientation(LinearLayout.VERTICAL);
         left.setBackground(plate(PANEL, 6));
         left.setPadding(pad, dp(10), pad, dp(10));
-        left.addView(text(es ? "LA CARPETA DEBE TENER ESTO" : "THE FOLDER MUST LOOK LIKE THIS", 13, GOLD, true));
+        left.addView(text(Look.zh() ? "目录里必须有这些" : es ? "LA CARPETA DEBE TENER ESTO" : "THE FOLDER MUST LOOK LIKE THIS", 13, GOLD, true));
         TextView tree = new TextView(this);
         tree.setText(tree());
         tree.setTypeface(Typeface.MONOSPACE);
@@ -255,8 +255,8 @@ public class GameFolderActivity extends Activity {
         LinearLayout right = new LinearLayout(this);
         right.setOrientation(LinearLayout.VERTICAL);
         right.setPadding(dp(18), 0, 0, 0);
-        right.addView(text(es ? "QUÉ TIENE QUE SER CADA UNA" : "WHAT EACH ONE MUST BE", 13, GOLD, true));
-        TextView notes = text(es
+        right.addView(text(Look.zh() ? "每一项分别是什么" : es ? "QUÉ TIENE QUE SER CADA UNA" : "WHAT EACH ONE MUST BE", 13, GOLD, true));
+        TextView notes = text(Look.zh() ? "• exefs：1.4.0 更新里的那一个。\n• romfs：游戏本体的，且已经打好 1.4.0 更新。\n• libmhgugame.so：在电脑上用指南里的工具生成一次。\n• 全部放在同一个目录，约 12 GB。请选择该目录。" : es
                 ? "• exefs: el de la actualización 1.4.0.\n"
                   + "• romfs: el del juego base, con la actualización 1.4.0 ya aplicada encima.\n"
                   + "• libmhgugame.so: se crea una sola vez en una PC con la herramienta de la guía.\n"
@@ -291,7 +291,7 @@ public class GameFolderActivity extends Activity {
         LinearLayout.LayoutParams size = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(46));
         size.setMargins(dp(8), 0, dp(8), 0);
         row.addView(pick, size);
-        Button leave = button(change ? (es ? "Cancelar" : "Cancel") : (es ? "Salir" : "Exit"), false);
+        Button leave = button(change ? (Look.zh() ? "取消" : es ? "Cancelar" : "Cancel") : (Look.zh() ? "退出" : es ? "Salir" : "Exit"), false);
         leave.setOnClickListener(v -> finish());
         LinearLayout.LayoutParams size2 = new LinearLayout.LayoutParams(dp(120), dp(46));
         size2.setMargins(dp(8), 0, dp(8), 0);
@@ -309,8 +309,8 @@ public class GameFolderActivity extends Activity {
     }
 
     private void refreshButton() {
-        if (pick != null) pick.setText(hasAccess() ? (es ? "Elegir carpeta" : "Choose folder")
-                                                   : (es ? "Dar permiso y elegir carpeta" : "Give permission and choose folder"));
+        if (pick != null) pick.setText(hasAccess() ? (Look.zh() ? "选择目录" : es ? "Elegir carpeta" : "Choose folder")
+                                                   : (Look.zh() ? "授予权限并选择目录" : es ? "Dar permiso y elegir carpeta" : "Give permission and choose folder"));
     }
 
     // ---- reading any folder: the plain file paths the game uses need this permission
@@ -327,7 +327,7 @@ public class GameFolderActivity extends Activity {
         }
         waitingAccess = true;
         status.setTextColor(GOLD);
-        status.setText(es ? "Activa el acceso a todos los archivos y vuelve. El juego solo lee esa carpeta: no cambia nada."
+        status.setText(Look.zh() ? "打开“所有文件访问权限”后返回。游戏只读取该目录，不会改动任何东西。" : es ? "Activa el acceso a todos los archivos y vuelve. El juego solo lee esa carpeta: no cambia nada."
                           : "Turn on access to all files and come back. The game only reads that folder: it changes nothing.");
         try {
             startActivity(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getPackageName())));
@@ -354,10 +354,10 @@ public class GameFolderActivity extends Activity {
     }
 
     private void openPicker() {
-        FolderBrowser.open(this, null, es ? "ELIGE LA CARPETA DEL JUEGO" : "CHOOSE THE GAME'S FOLDER",
+        FolderBrowser.open(this, null, Look.zh() ? "选择游戏目录" : es ? "ELIGE LA CARPETA DEL JUEGO" : "CHOOSE THE GAME'S FOLDER",
                 GameFolderActivity::holdsGame,
-                (dir, game) -> game ? (es ? "✓ Aquí está el juego: exefs y romfs." : "✓ The game is here: exefs and romfs.")
-                                    : (es ? "Entra a la carpeta que tiene exefs y romfs." : "Go into the folder that holds exefs and romfs."),
+                (dir, game) -> game ? (Look.zh() ? "✓ 游戏在这里：exefs 和 romfs。" : es ? "✓ Aquí está el juego: exefs y romfs." : "✓ The game is here: exefs and romfs.")
+                                    : (Look.zh() ? "进入包含 exefs 和 romfs 的目录。" : es ? "Entra a la carpeta que tiene exefs y romfs." : "Go into the folder that holds exefs and romfs."),
                 this::verify, this::systemPicker, false);
     }
 
@@ -367,7 +367,7 @@ public class GameFolderActivity extends Activity {
             startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), PICK);
         } catch (ActivityNotFoundException e) {
             status.setTextColor(ALERT);
-            status.setText(es ? "Este dispositivo no tiene selector de carpetas." : "This device has no folder picker.");
+            status.setText(Look.zh() ? "此设备没有目录选择器。" : es ? "Este dispositivo no tiene selector de carpetas." : "This device has no folder picker.");
         }
     }
 
@@ -382,7 +382,7 @@ public class GameFolderActivity extends Activity {
         File dir = FolderBrowser.pathOf(data.getData());
         if (dir == null) {
             status.setTextColor(ALERT);
-            status.setText(es ? "No se puede usar esa ubicación. Busca la carpeta en la memoria del teléfono o en la tarjeta SD."
+            status.setText(Look.zh() ? "无法使用该位置。请在手机存储或 SD 卡中找到该目录。" : es ? "No se puede usar esa ubicación. Busca la carpeta en la memoria del teléfono o en la tarjeta SD."
                               : "That location can't be used. Find the folder in the phone's storage or on the SD card.");
             return;
         }
@@ -393,7 +393,7 @@ public class GameFolderActivity extends Activity {
     private void verify(File picked) {
         pick.setEnabled(false);
         status.setTextColor(GOLD);
-        status.setText(es ? "Comprobando los archivos..." : "Checking the files...");
+        status.setText(Look.zh() ? "正在检查文件…" : es ? "Comprobando los archivos..." : "Checking the files...");
         new Thread(() -> {
             File[] ways = {picked, new File(picked, "data"), picked.getParentFile()};  // (or one level off)
             // (the game code changed folders or versions: what is kept goes with the new choice)
@@ -425,35 +425,35 @@ public class GameFolderActivity extends Activity {
     private String problem(File dir) {
         File exefs = new File(dir, "exefs"), romfs = new File(dir, "romfs"), main = new File(exefs, "main");
         if (!exefs.isDirectory() && !romfs.isDirectory())
-            return es ? "En " + dir.getName() + " no están exefs ni romfs. Elige la carpeta que las contiene."
+            return Look.zh() ? "在 " + dir.getName() + " 里没有 exefs 也没有 romfs。请选择包含它们的目录。" : es ? "En " + dir.getName() + " no están exefs ni romfs. Elige la carpeta que las contiene."
                       : "exefs and romfs are not in " + dir.getName() + ". Choose the folder that holds them.";
-        if (!exefs.isDirectory()) return es ? "Falta la carpeta exefs, al lado de romfs." : "The exefs folder is missing, beside romfs.";
-        if (!romfs.isDirectory()) return es ? "Falta la carpeta romfs, al lado de exefs." : "The romfs folder is missing, beside exefs.";
-        if (!main.canRead()) return es ? "En exefs falta el archivo main." : "The file main is missing from exefs.";
+        if (!exefs.isDirectory()) return Look.zh() ? "缺少 exefs 目录，它应在 romfs 旁边。" : es ? "Falta la carpeta exefs, al lado de romfs." : "The exefs folder is missing, beside romfs.";
+        if (!romfs.isDirectory()) return Look.zh() ? "缺少 romfs 目录，它应在 exefs 旁边。" : es ? "Falta la carpeta romfs, al lado de exefs." : "The romfs folder is missing, beside exefs.";
+        if (!main.canRead()) return Look.zh() ? "exefs 里缺少 main 文件。" : es ? "En exefs falta el archivo main." : "The file main is missing from exefs.";
         byte[] head = new byte[0x48];
         try (FileInputStream in = new FileInputStream(main)) {
             if (in.read(head) != head.length) head = new byte[0x48];
         } catch (Exception e) {
-            return es ? "No se pudo leer exefs/main." : "exefs/main could not be read.";
+            return Look.zh() ? "无法读取 exefs/main。" : es ? "No se pudo leer exefs/main." : "exefs/main could not be read.";
         }
         boolean nso = head[0] == 'N' && head[1] == 'S' && head[2] == 'O' && head[3] == '0';
         if (!nso || !Arrays.equals(Arrays.copyOfRange(head, 0x40, 0x48), BUILD_ID))
-            return es ? "Este exefs no es de la versión 1.4.0. Usa el de la actualización 1.4.0."
+            return Look.zh() ? "这个 exefs 不是 1.4.0 版本的。请使用 1.4.0 更新里的那个。" : es ? "Este exefs no es de la versión 1.4.0. Usa el de la actualización 1.4.0."
                       : "This exefs is not version 1.4.0. Use the one from the 1.4.0 update.";
         int files = countFiles(romfs);
         if (files < MIN_FILES)
-            return es ? "romfs está incompleto: tiene " + files + " archivos y deberían ser 35.531. Usa el juego base con la actualización 1.4.0 ya aplicada."
+            return Look.zh() ? "romfs 不完整：有 " + files + " 个文件，应该有 35,531 个。请使用已打好 1.4.0 更新的游戏本体。" : es ? "romfs está incompleto: tiene " + files + " archivos y deberían ser 35.531. Usa el juego base con la actualización 1.4.0 ya aplicada."
                       : "romfs is incomplete: it has " + files + " files where there should be 35,531. Use the base game with the 1.4.0 update applied.";
         boolean bundled = new File(getApplicationInfo().nativeLibraryDir, "libmhgugame.so").exists();
         File lib = new File(dir, "libmhgugame.so");
         if (!lib.canRead() && !bundled)
-            return es ? "Falta libmhgugame.so en esa carpeta. Créalo en una PC con la herramienta de la guía."
+            return Look.zh() ? "该目录里缺少 libmhgugame.so。请在电脑上用指南里的工具生成。" : es ? "Falta libmhgugame.so en esa carpeta. Créalo en una PC con la herramienta de la guía."
                       : "libmhgugame.so is missing from that folder. Make it on a PC with the guide's tool.";
         if (!bundled && !wantedId().equals(idBeside(dir)))
-            return es ? "Este libmhgugame.so es de otra versión. Créalo de nuevo con la herramienta de esta versión."
+            return Look.zh() ? "这个 libmhgugame.so 是其他版本的。请用本版本的工具重新生成。" : es ? "Este libmhgugame.so es de otra versión. Créalo de nuevo con la herramienta de esta versión."
                       : "This libmhgugame.so is from another version. Make it again with this version's tool.";
         if (!new File(romfs, "nativeNX/system/app_shader/AppShaderPackage.mfx").exists())
-            return es ? "En romfs falta nativeNX/system/app_shader/AppShaderPackage.mfx. Usa el juego base con la actualización 1.4.0 ya aplicada."
+            return Look.zh() ? "romfs 里缺少 nativeNX/system/app_shader/AppShaderPackage.mfx。请使用已打好 1.4.0 更新的游戏本体。" : es ? "En romfs falta nativeNX/system/app_shader/AppShaderPackage.mfx. Usa el juego base con la actualización 1.4.0 ya aplicada."
                       : "nativeNX/system/app_shader/AppShaderPackage.mfx is missing from romfs. Use the base game with the 1.4.0 update applied.";
         return null;
     }
@@ -511,7 +511,7 @@ public class GameFolderActivity extends Activity {
                 AppHome.write(savedFile(), dir.getAbsolutePath());
             } catch (Exception e2) {
                 status.setTextColor(ALERT);
-                status.setText(es ? "No se pudo guardar la carpeta elegida: Android no deja que el juego escriba en " + home()
+                status.setText(Look.zh() ? "无法保存所选的目录：Android 不允许游戏写入 " + home() + "。请从错误界面或“设置”里分享日志。" : es ? "No se pudo guardar la carpeta elegida: Android no deja que el juego escriba en " + home()
                                     + ". Comparte el registro desde la pantalla de error o desde Ajustes."
                                   : "The folder chosen couldn't be kept: Android won't let the game write in " + home()
                                     + ". Share the log from the error screen or from Settings.");
@@ -521,7 +521,7 @@ public class GameFolderActivity extends Activity {
         rejectedFile().delete();
         if (change) {
             status.setTextColor(GOLD);
-            status.setText(es ? "Listo: se usará la próxima vez que abras el juego." : "Done: it will be used the next time you open the game.");
+            status.setText(Look.zh() ? "完成：下次打开游戏时生效。" : es ? "Listo: se usará la próxima vez que abras el juego." : "Done: it will be used the next time you open the game.");
             pick.setEnabled(false);
             return;
         }

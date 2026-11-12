@@ -87,10 +87,15 @@ public class SaveExportActivity extends Activity {
         box.setOrientation(LinearLayout.VERTICAL);
         box.setPadding(dp(24), dp(14), dp(24), dp(16));
         box.setBackground(plate(WINE));
-        TextView title = text(es ? "EXPORTAR PARTIDA" : "EXPORT YOUR SAVE", 20, GOLD, true);
+        TextView title = text(Look.zh() ? "导出存档" : es ? "EXPORTAR PARTIDA" : "EXPORT YOUR SAVE", 20, GOLD, true);
         title.setGravity(Gravity.CENTER);
         box.addView(title);
-        TextView body = text(es
+        TextView body = text(Look.zh() ? "选择一个文件夹，会在其中新建一个文件夹存放你的 system 和 system_backup 文件。这里复制的是你在游戏里最后一次保存的内容。\n\n"
+                + "要用于模拟器，请把它传到电脑，再把这两个文件复制到游戏的存档文件夹：\n"
+                + "• Ryujinx：右键点击游戏，Open User Save Directory。\n"
+                + "• yuzu：右键点击游戏，Open Save Data Location。\n"
+                + "复制前请先备份那里已有的内容。"
+                : es
                 ? "Elige una carpeta y ahí se crea otra con tus archivos system y system_backup. Se copia lo último que guardaste en el juego.\n\n"
                   + "Para usarla en un emulador, pásala a tu PC y copia los dos archivos a la carpeta de partida del juego:\n"
                   + "• Ryujinx: clic derecho en el juego, Open User Save Directory.\n"
@@ -111,12 +116,12 @@ public class SaveExportActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setGravity(Gravity.CENTER);
         row.setPadding(0, dp(12), 0, 0);
-        main = button(es ? "Elegir carpeta" : "Choose a folder", true);
+        main = button(Look.zh() ? "选择文件夹" : es ? "Elegir carpeta" : "Choose a folder", true);
         main.setOnClickListener(v -> startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), PICK));
         LinearLayout.LayoutParams size = new LinearLayout.LayoutParams(dp(190), dp(46));
         size.setMargins(dp(8), 0, dp(8), 0);
         row.addView(main, size);
-        Button close = button(es ? "Cerrar" : "Close", false);
+        Button close = button(Look.zh() ? "关闭" : es ? "Cerrar" : "Close", false);
         close.setOnClickListener(v -> finish());
         row.addView(close, new LinearLayout.LayoutParams(size));
         box.addView(row);
@@ -134,7 +139,7 @@ public class SaveExportActivity extends Activity {
 
         if (!new File(saves(), FILES[0]).isFile()) {
             main.setEnabled(false);
-            say(es ? "Todavía no hay ninguna partida guardada." : "There is no saved game yet.", true);
+            say(Look.zh() ? "还没有任何已保存的存档。" : es ? "Todavía no hay ninguna partida guardada." : "There is no saved game yet.", true);
         }
     }
 
@@ -149,7 +154,7 @@ public class SaveExportActivity extends Activity {
         if (request != PICK || result != RESULT_OK || data == null || data.getData() == null) return;
         Uri tree = data.getData();
         main.setEnabled(false);
-        say(es ? "Copiando…" : "Copying…", false);
+        say(Look.zh() ? "正在复制…" : es ? "Copiando…" : "Copying…", false);
         new Thread(() -> {
             String folder = null, error = null;
             try {
@@ -161,8 +166,8 @@ public class SaveExportActivity extends Activity {
             final String done = folder, why = error;
             runOnUiThread(() -> {
                 main.setEnabled(true);
-                if (done != null) say((es ? "Listo: carpeta " : "Done: folder ") + done, false);
-                else say((es ? "No se pudo copiar: " : "Could not copy it: ") + why, true);
+                if (done != null) say((Look.zh() ? "完成：文件夹 " : es ? "Listo: carpeta " : "Done: folder ") + done, false);
+                else say((Look.zh() ? "复制失败：" : es ? "No se pudo copiar: " : "Could not copy it: ") + why, true);
             });
         }).start();
     }
@@ -173,7 +178,7 @@ public class SaveExportActivity extends Activity {
         Uri parent = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree));
         String name = "MHGU_save_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US).format(new Date());
         Uri dir = DocumentsContract.createDocument(cr, parent, DocumentsContract.Document.MIME_TYPE_DIR, name);
-        if (dir == null) throw new IOException(es ? "esa carpeta no admite archivos nuevos" : "that folder takes no new files");
+        if (dir == null) throw new IOException(Look.zh() ? "该文件夹不能新建文件" : es ? "esa carpeta no admite archivos nuevos" : "that folder takes no new files");
         for (String file : FILES) {
             File from = new File(saves(), file);
             if (!from.isFile()) continue;

@@ -35,6 +35,9 @@ final class Look {
 
     static boolean es() { return "es".equals(Locale.getDefault().getLanguage()); }
 
+    /** The phone's language is Chinese: the screens are written in en / es / zh, as runtime/settings_locale.h is. */
+    static boolean zh() { return "zh".equals(Locale.getDefault().getLanguage()); }
+
     static int dp(Context c, int v) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, c.getResources().getDisplayMetrics());
     }

@@ -151,10 +151,10 @@ public class SaveImportActivity extends Activity {
         page.setOrientation(LinearLayout.VERTICAL);
         page.setPadding(pad * 2, dp(8), pad * 2, dp(6));
 
-        TextView title = text(es ? "IMPORTAR PARTIDA" : "IMPORT A SAVE", 20, GOLD, true);
+        TextView title = text(Look.zh() ? "导入存档" : es ? "IMPORTAR PARTIDA" : "IMPORT A SAVE", 20, GOLD, true);
         title.setGravity(Gravity.CENTER);
         page.addView(title);
-        TextView intro = text(es ? "Trae tu partida desde un emulador o desde otro dispositivo."
+        TextView intro = text(Look.zh() ? "从模拟器或另一台设备导入你的存档。" : es ? "Trae tu partida desde un emulador o desde otro dispositivo."
                                  : "Bring your save from an emulator or another device.", 14, CREAM, false);
         intro.setGravity(Gravity.CENTER);
         intro.setPadding(0, dp(2), 0, dp(8));
@@ -162,7 +162,11 @@ public class SaveImportActivity extends Activity {
 
         LinearLayout columns = new LinearLayout(this);
         columns.setOrientation(LinearLayout.HORIZONTAL);
-        columns.addView(column(es ? "QUÉ ARCHIVO ELEGIR" : "WHICH FILE TO CHOOSE", es
+        columns.addView(column(Look.zh() ? "选择哪个文件" : es ? "QUÉ ARCHIVO ELEGIR" : "WHICH FILE TO CHOOSE", Look.zh() ? "名为 system 的文件，约 5 MB。\n"
+                  + "• Ryujinx：右键点击游戏，Open User Save Directory。\n"
+                  + "• yuzu：右键点击游戏，Open Save Data Location。\n"
+                  + "把它复制到这里，例如“下载”文件夹。"
+                : es
                 ? "Es el archivo system, de unos 5 MB.\n"
                   + "• Ryujinx: clic derecho en el juego, Open User Save Directory.\n"
                   + "• yuzu: clic derecho en el juego, Open Save Data Location.\n"
@@ -172,7 +176,11 @@ public class SaveImportActivity extends Activity {
                   + "• yuzu: right-click the game, Open Save Data Location.\n"
                   + "Copy it here, for example to Downloads.", true),
                 new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-        columns.addView(column(es ? "QUÉ VA A PASAR" : "WHAT WILL HAPPEN", es
+        columns.addView(column(Look.zh() ? "会发生什么" : es ? "QUÉ VA A PASAR" : "WHAT WILL HAPPEN", Look.zh() ? "• 本设备上的所有角色都会被替换。\n"
+                  + "• 你当前的存档会先备份一份，位于 MHGURecomp/save_backups。\n"
+                  + (SaveFolder.chosen(this) != null ? "• 它会进入你的存档文件夹：其他设备同步后也会收到。\n" : "")
+                  + "• 游戏会重启：有要保留的进度请先保存。"
+                : es
                 ? "• Se reemplazan todos los personajes de este dispositivo.\n"
                   + "• Tu partida actual queda guardada en una copia, en MHGURecomp/save_backups.\n"
                   + (SaveFolder.chosen(this) != null ? "• Va a tu carpeta de partidas: tus otros dispositivos también la reciben cuando se sincronicen.\n" : "")
@@ -199,12 +207,12 @@ public class SaveImportActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setGravity(Gravity.CENTER);
         row.setPadding(0, 0, 0, dp(10));
-        main = button(es ? "Elegir archivo" : "Choose file", true);
+        main = button(Look.zh() ? "选择文件" : es ? "Elegir archivo" : "Choose file", true);
         main.setOnClickListener(v -> { if (ready) confirm(); else openPicker(); });
         LinearLayout.LayoutParams size = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(46));
         size.setMargins(dp(8), 0, dp(8), 0);
         row.addView(main, size);
-        leave = button(es ? "Cancelar" : "Cancel", false);
+        leave = button(Look.zh() ? "取消" : es ? "Cancelar" : "Cancel", false);
         leave.setOnClickListener(v -> finish());
         LinearLayout.LayoutParams size2 = new LinearLayout.LayoutParams(dp(120), dp(46));
         size2.setMargins(dp(8), 0, dp(8), 0);
@@ -232,7 +240,7 @@ public class SaveImportActivity extends Activity {
         try {
             startActivityForResult(intent, PICK);
         } catch (ActivityNotFoundException e) {
-            say(es ? "Este dispositivo no tiene selector de archivos." : "This device has no file picker.", true);
+            say(Look.zh() ? "此设备没有文件选择器。" : es ? "Este dispositivo no tiene selector de archivos." : "This device has no file picker.", true);
         }
     }
 
@@ -248,7 +256,7 @@ public class SaveImportActivity extends Activity {
         ready = false;
         main.setEnabled(false);
         leave.setEnabled(false);
-        say(es ? "Revisando la partida..." : "Checking the save...", false);
+        say(Look.zh() ? "正在检查存档…" : es ? "Revisando la partida..." : "Checking the save...", false);
         new Thread(() -> {
             String wrong = problem(uri);
             runOnUiThread(() -> {
@@ -257,13 +265,13 @@ public class SaveImportActivity extends Activity {
                 if (wrong != null) {
                     tmpFile().delete();
                     say(wrong, true);
-                    main.setText(es ? "Elegir archivo" : "Choose file");
+                    main.setText(Look.zh() ? "选择文件" : es ? "Elegir archivo" : "Choose file");
                     return;
                 }
                 ready = true;
-                say(es ? "Partida correcta. Al continuar reemplaza la de este dispositivo."
+                say(Look.zh() ? "存档没问题。继续会替换本设备上的存档。" : es ? "Partida correcta. Al continuar reemplaza la de este dispositivo."
                        : "The save is good. Going on replaces the one on this device.", false);
-                main.setText(es ? "Importar y reiniciar" : "Import and restart");
+                main.setText(Look.zh() ? "导入并重启" : es ? "Importar y reiniciar" : "Import and restart");
                 main.requestFocus();
             });
         }).start();
@@ -271,7 +279,7 @@ public class SaveImportActivity extends Activity {
 
     private String problem(Uri uri) {
         File dir = importDir(this);
-        if (!dir.isDirectory() && !dir.mkdirs()) return es ? "No se pudo preparar la carpeta de la app." : "The app's folder could not be prepared.";
+        if (!dir.isDirectory() && !dir.mkdirs()) return Look.zh() ? "无法准备应用文件夹。" : es ? "No se pudo preparar la carpeta de la app." : "The app's folder could not be prepared.";
         byte[] head = new byte[MARK_AT + MARK.length];
         long total = 0;
         try (InputStream in = getContentResolver().openInputStream(uri); FileOutputStream out = new FileOutputStream(tmpFile())) {
@@ -286,11 +294,11 @@ public class SaveImportActivity extends Activity {
             }
         } catch (IOException | SecurityException e) {
             Log.e(TAG, "save import: " + e);
-            return es ? "No se pudo leer ese archivo. Cópialo a la memoria del dispositivo y vuelve a intentarlo."
+            return Look.zh() ? "无法读取该文件。请把它复制到设备存储中，然后重试。" : es ? "No se pudo leer ese archivo. Cópialo a la memoria del dispositivo y vuelve a intentarlo."
                       : "That file could not be read. Copy it to the device's storage and try again.";
         }
         if (total != SIZE || !Arrays.equals(Arrays.copyOfRange(head, MARK_AT, MARK_AT + MARK.length), MARK))
-            return es ? "Ese archivo no es una partida de este juego. Elige el archivo llamado system."
+            return Look.zh() ? "该文件不是本游戏的存档。请选择名为 system 的文件。" : es ? "Ese archivo no es una partida de este juego. Elige el archivo llamado system."
                       : "That file is not a save of this game. Choose the file named system.";
         return null;
     }
@@ -299,13 +307,13 @@ public class SaveImportActivity extends Activity {
         File pending = new File(importDir(this), "system");
         pending.delete();
         if (!tmpFile().renameTo(pending)) {
-            say(es ? "No se pudo preparar la partida. No se cambió nada." : "The save could not be prepared. Nothing was changed.", true);
+            say(Look.zh() ? "无法准备存档。没有做任何更改。" : es ? "No se pudo preparar la partida. No se cambió nada." : "The save could not be prepared. Nothing was changed.", true);
             return;
         }
         committed = true;
         main.setEnabled(false);
         leave.setEnabled(false);
-        say(es ? "Reiniciando..." : "Restarting...", false);
+        say(Look.zh() ? "正在重启…" : es ? "Reiniciando..." : "Restarting...", false);
         Intent intent = new Intent(this, PhoenixActivity.class);  // (waits for this process, then opens the app again)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(PhoenixActivity.EXTRA_PID, Process.myPid());
