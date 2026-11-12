@@ -152,7 +152,8 @@ std::atomic<int> request_view;  // (SETTINGS_VIEW_*: a desktop's dialog answered
 std::atomic<int> captured_key{-1};
 // (the draft's language while the menu edits it; before the menu first opens - the credits at the start - the saved one:
 // the draft is still empty then, and the credits came out in English on a Spanish system)
-const char *tr(const char *text) { return settings_text(s.editing ? s.draft.language : config_language(), text); }
+int ui_lang() { return s.editing ? s.draft.language : config_language(); }
+const char *tr(const char *text) { return settings_text(ui_lang(), text); }
 std::string fmt(const char *text, ...) {
     char buffer[512];
     va_list args;
@@ -391,8 +392,9 @@ void shadow_text(ImDrawList *dl, float size, ImVec2 p, ImU32 col, const char *te
 ImFont *title_font() {
     ImGuiIO &io = ImGui::GetIO();
     // (Chinese: the body's font, which the CJK font is merged into. The serif has no Chinese of its own, and merging the
-    // CJK font into it too would keep a second copy of it in memory - tens of megabytes on a phone)
-    if (config_language() == 2) return ImGui::GetFont();
+    // CJK font into it too would keep a second copy of it in memory - tens of megabytes on a phone). ui_lang(), not the
+    // saved language: the row's own preview while the menu is open would otherwise leave the titles in the serif.
+    if (ui_lang() == 2) return ImGui::GetFont();
     return io.Fonts->Fonts.Size > 1 ? io.Fonts->Fonts[1] : ImGui::GetFont();
 }
 // A finger's button: a dark square plate with an edge and a rule inside (the touch controls' discs, made square), gold
@@ -2985,7 +2987,7 @@ const PhoneHelp PHONE_HELP[] = {
      "Cuánto gira la mira por cada giro del teléfono o del mando: 1.0x, el mismo ángulo.", "手机或手柄转动时准心转动的幅度：1.0x 即相同角度。"},
     {"Join", "A host's IP address, to play over a VPN. Empty: searches your network.", "La dirección IP de un anfitrión, para jugar por VPN. Vacío: busca en tu red.", "主机的 IP 地址，用于通过 VPN 联机。留空：搜索局域网。"},
     {"Server", "The server that lists hubs over the internet: everyone who uses the same one finds the others' hubs when they search for hubs in the game, with no ports to open. The default, " LDN_DEFAULT_SERVER ", is run by players, not by this project. Custom: type another (a name or IP, and :port if it is not 39510). Off: only your local network. The servers you type and save stay in this list, the last one first (up to 24): the × beside one takes it out (with a controller, the button that saves).",
-     "El servidor que lista las salas por internet: todos los que usan el mismo encuentran las salas de los demás al buscar salas en el juego, sin abrir puertos. El predeterminado, " LDN_DEFAULT_SERVER ", lo mantienen jugadores, no este proyecto. Otro: escribe otro (un nombre o una IP, y :puerto si no es el 39510). Ninguno: solo tu red local. Los servidores que escribes y guardas quedan en esta lista, el último primero (hasta 24): la × a su lado lo quita (con un mando, el botón que guarda)."},
+     "El servidor que lista las salas por internet: todos los que usan el mismo encuentran las salas de los demás al buscar salas en el juego, sin abrir puertos. El predeterminado, " LDN_DEFAULT_SERVER ", lo mantienen jugadores, no este proyecto. Otro: escribe otro (un nombre o una IP, y :puerto si no es el 39510). Ninguno: solo tu red local. Los servidores que escribes y guardas quedan en esta lista, el último primero (hasta 24): la × a su lado lo quita (con un mando, el botón que guarda).", "列出互联网上的集会所服务器：用同一个服务器的玩家在游戏里搜索集会所时能互相找到，不用开端口。默认的 hunterhubid-gu-hub.duckdns.org 由玩家运行，不是本项目。自定义：输入另一个（域名或 IP，端口不是 39510 时写成 :端口）。关闭：只用本地网络。你输入并保存的服务器会留在这个列表里，最近的排在最前（最多 24 个）：点它旁边的 × 可移除（用手柄时是按保存键）。"},
     {"Key", "On the hub server, only players with the same key see each other's hubs: agree on one with your friends. Public: no key, the public hubs. The keys you type and save stay in this list, the last one first (up to 24): the × beside one takes it out (with a controller, the button that saves).",
      "En el servidor de hubs, solo los jugadores con la misma clave ven los hubs de los demás: acuerden una con tus amigos. Pública: sin clave, los hubs públicos. Las claves que escribes y guardas quedan en esta lista, la última primero (hasta 24): la × a su lado la quita (con un mando, el botón que guarda).", "在集会所服务器上，只有密钥相同的玩家能互相看到集会所：与好友约定同一个。公开：不设密钥，使用公开集会所。你输入并保存的密钥会留在此列表中，最新的在前（最多 24 个）：旁的 × 可将其删除（用手柄时为保存键）。"},
     {"1Player", "The health of large monsters in Hub quests, by number of hunters. When you join a hub, the host's values are used.",
