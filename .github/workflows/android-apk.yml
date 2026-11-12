@@ -112,6 +112,7 @@ jobs:
         run: |
           set -euo pipefail
           export LOCALAPPDATA="${LOCALAPPDATA:-$USERPROFILE/AppData/Local}"
+          mkdir -p "native/build/arm64-v8a"  # (the script writes its logs there and expects it to exist)
           bash native/build_native.sh arm64-v8a
 
       - name: Signing key
