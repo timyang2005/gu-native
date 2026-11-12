@@ -1356,19 +1356,22 @@ void config_load(void) {
     if (!f) {
         FILE *o = fopen(path, "w");
         const char *ini = DEFAULT_INI, *lang = NULL;
-        // (a phone or a PC set to Spanish: the settings menu in Spanish from the start)
+        // (the menu's language at the first start: Spanish on a Spanish system, as it always was; Chinese otherwise,
+        // this build's own language - English is a choice in the menu)
         int nloc = 0;
         SDL_Locale **loc = SDL_GetPreferredLocales(&nloc);
         bool spanish = loc && nloc > 0 && loc[0]->language && !SDL_strncasecmp(loc[0]->language, "es", 2);
         SDL_free(loc);
-        if (spanish) lang = strstr(ini, "Language = English\n");
+        const char *lang_name = spanish ? "Spanish" : "Chinese";
+        int lang_value = spanish ? 1 : 2;
+        lang = strstr(ini, "Language = English\n");
         if (o && lang) {
             fwrite(ini, 1, (size_t)(lang - ini), o);
-            fputs("Language = Spanish\n", o);
+            fprintf(o, "Language = %s\n", lang_name);
             fputs(lang + strlen("Language = English\n"), o);
             fclose(o);
-            g_config.language = 1;
-            LOG("[config] wrote the default settings to %s (the menu in Spanish, as the system)\n", path);
+            g_config.language = lang_value;
+            LOG("[config] wrote the default settings to %s (the menu in %s)\n", path, lang_name);
         } else if (o) {
             fputs(ini, o);
             fclose(o);

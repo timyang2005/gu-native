@@ -547,7 +547,7 @@ void credits_show();  // (the credits shown when the app opens: draw_credits, fu
 // language
 const char *app_title() {
 #ifdef __ANDROID__
-    return "MHGU for Android";
+    return tr("MHGU for Android");
 #else
     return tr("MHGU for PC");
 #endif

@@ -980,6 +980,7 @@ static inline const char *settings_text(int language, const char *english) {
         {"Android: at most once a day, the app asks GitHub for the latest release of khorne-hub/gu-native (nothing else is sent) and says so at the next start when there is a newer version. It never downloads or installs anything.", "Android: at most once a day, the app asks GitHub for the latest release of khorne-hub/gu-native (nothing else is sent) and says so at the next start when there is a newer version. It never downloads or installs anything.", "Android：每天至多一次，应用会向 GitHub 询问 khorne-hub/gu-native 的最新版本（不会发送任何其他内容），并在下次启动时若有更新的版本就说明。它从不下载或安装任何东西。"},
         {"On, Off", "On, Off", "开启、关闭。"},
         {"The notice at the start that says F1 (or Minus + Plus on a controller) opens the settings menu shows until the menu has been opened once, which turns this On", "The notice at the start that says F1 (or Minus + Plus on a controller) opens the settings menu shows until the menu has been opened once, which turns this On", "启动时提示按 F1（手柄上为减号 + 加号）打开设置菜单的通知会一直显示，直到菜单被打开过一次，此时该项变为开启。"},
+        {"MHGU for Android", "MHGU para Android", "MHGU 安卓版"},
     };
     for (unsigned i = 0; i < sizeof messages / sizeof *messages; ++i)
         if (!strcmp(english, messages[i].en)) {
