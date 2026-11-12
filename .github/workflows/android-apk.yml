@@ -1,0 +1,162 @@
+name: android apk
+
+# Builds the APK on GitHub's Windows runner, which is the environment the project documents for
+# Linux-free local builds (deps/*.sh and native/build_native.sh use cygpath, cmake.exe and the NDK's
+# windows-x86_64 toolchain).  The public APK carries no game code: libmhgugame.so is made by each
+# player from their own copy with tools/build_game.py, and -Pwithgame is deliberately not passed.
+on:
+  workflow_dispatch:
+  push:
+    branches: [ zh-cn ]
+    paths-ignore:
+      - '**/*.md'
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JOBS: 4
+  # The versions CLAUDE.md pins.  shaderc's three third-party repositories are the commits its DEPS
+  # names at tag v2026.4 (glslang_revision, spirv_headers_revision, spirv_tools_revision).
+  SDL3: SDL3-3.4.18
+  SHADERC_TAG: v2026.4
+  GLSLANG_REV: e1b562a8bed273a02f30b59b66a5d499793cede5
+  SPIRV_HEADERS_REV: 04fd3caa1e8267e4d95c806cad901181728e1006
+  SPIRV_TOOLS_REV: ef96ed763b43b59b33b31b362f09a02b729fa1c9
+
+jobs:
+  apk:
+    runs-on: windows-latest
+    timeout-minutes: 330
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Built dependencies (SDL3, shaderc, FFmpeg)
+        id: deps-cache
+        uses: actions/cache@v4
+        with:
+          path: deps/out
+          key: deps-arm64-${{ hashFiles('deps/build_deps.sh', 'deps/build_ffmpeg.sh', 'native/CMakeLists.txt') }}-${{ env.SHADERC_TAG }}
+
+      - name: Android SDK with NDK 27 and CMake 3.22.1
+        shell: pwsh
+        run: |
+          $sdk = if ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT }
+                 elseif ($env:ANDROID_HOME) { $env:ANDROID_HOME }
+                 else { 'C:\Android\android-sdk' }
+          Write-Host "SDK root: $sdk"
+          # deps/*.sh look for it under %LOCALAPPDATA%\Android\Sdk (the author's machine): point that at the runner's
+          $link = Join-Path $env:LOCALAPPDATA 'Android\Sdk'
+          New-Item -ItemType Directory -Force -Path (Split-Path $link) | Out-Null
+          if (-not (Test-Path $link)) { New-Item -ItemType Junction -Path $link -Target $sdk | Out-Null }
+          $sm = Join-Path $sdk 'cmdline-tools\latest\bin\sdkmanager.bat'
+          if (-not (Test-Path $sm)) {
+            $sm = (Get-ChildItem (Join-Path $sdk 'cmdline-tools') -Filter sdkmanager.bat -Recurse -ErrorAction Stop |
+                   Select-Object -First 1).FullName
+          }
+          "y`ny`ny`ny`ny`ny`n" | & $sm --licenses | Out-Null
+          & $sm --install 'ndk;27.0.12077973' 'cmake;3.22.1' 'platforms;android-35' 'build-tools;35.0.0' 'platform-tools'
+          if ($LASTEXITCODE -ne 0) { throw "sdkmanager failed: $LASTEXITCODE" }
+          Get-ChildItem (Join-Path $sdk 'ndk'), (Join-Path $sdk 'cmake') | Select-Object FullName
+
+      - name: Sources (SDL3, FFmpeg, shaderc)
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p deps/src && cd deps/src
+          if [ ! -d "$SDL3" ]; then
+            echo "== SDL3 $SDL3"
+            curl -fsSL -o sdl3.tar.gz "https://github.com/libsdl-org/SDL/releases/download/release-3.4.18/$SDL3.tar.gz"
+            tar xzf sdl3.tar.gz && rm sdl3.tar.gz
+          fi
+          if [ ! -d ffmpeg ]; then
+            echo "== FFmpeg 9.0.2"
+            curl -fsSL -o ffmpeg.tar.xz "https://github.com/khorne-hub/gu-native/releases/download/v0.1.9.2/ffmpeg-9.0.2.tar.xz"
+            # (Git Bash's tar usually reads xz; 7-Zip is the runner's fallback)
+            tar xJf ffmpeg.tar.xz 2>/dev/null || { 7z x -y ffmpeg.tar.xz >/dev/null && tar xf ffmpeg.tar; }
+            mv ffmpeg-9.0.2 ffmpeg && rm -f ffmpeg.tar.xz ffmpeg.tar
+          fi
+          if [ ! -d shaderc ]; then
+            echo "== shaderc $SHADERC_TAG"
+            curl -fsSL -o shaderc.tar.gz "https://github.com/google/shaderc/archive/refs/tags/$SHADERC_TAG.tar.gz"
+            tar xzf shaderc.tar.gz && mv "shaderc-${SHADERC_TAG#v}" shaderc && rm shaderc.tar.gz
+          fi
+          # one commit each: the revisions shaderc's DEPS names for this tag
+          clone_at() {
+            local url=$1 dir=$2 rev=$3
+            if [ -d "shaderc/third_party/$dir/.git" ]; then return; fi
+            git init --quiet "shaderc/third_party/$dir"
+            git -C "shaderc/third_party/$dir" remote add origin "$url"
+            git -C "shaderc/third_party/$dir" fetch --quiet --depth 1 origin "$rev"
+            git -C "shaderc/third_party/$dir" checkout --quiet FETCH_HEAD
+          }
+          clone_at https://github.com/KhronosGroup/glslang.git glslang "$GLSLANG_REV"
+          clone_at https://github.com/KhronosGroup/SPIRV-Headers.git spirv-headers "$SPIRV_HEADERS_REV"
+          clone_at https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools "$SPIRV_TOOLS_REV"
+          ls deps/src 2>/dev/null || ls .
+
+      - name: Build SDL3, shaderc and FFmpeg (arm64-v8a)
+        shell: bash
+        run: |
+          set -euo pipefail
+          export LOCALAPPDATA="${LOCALAPPDATA:-$USERPROFILE/AppData/Local}"
+          bash deps/build_deps.sh arm64-v8a
+          bash deps/build_ffmpeg.sh arm64-v8a
+          ls -la deps/out/arm64-v8a
+
+      - name: Build the runtime (libmain.so, libmhguffmpeg.so, jniLibs)
+        shell: bash
+        run: |
+          set -euo pipefail
+          export LOCALAPPDATA="${LOCALAPPDATA:-$USERPROFILE/AppData/Local}"
+          bash native/build_native.sh arm64-v8a
+
+      - name: Signing key
+        shell: pwsh
+        env:
+          KEYSTORE_B64: ${{ secrets.MHGU_KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.MHGU_KEYSTORE_PASSWORD }}
+        run: |
+          $pass = $env:KEYSTORE_PASSWORD
+          if (-not $pass) { $pass = 'mhgu-zh' }
+          $keytool = if ($env:JAVA_HOME) { Join-Path $env:JAVA_HOME 'bin\keytool.exe' } else { 'keytool' }
+          if ($env:KEYSTORE_B64) {
+            Write-Host "keystore: from the repository secret"
+            [IO.File]::WriteAllBytes("$PWD\android\mhgu.keystore", [Convert]::FromBase64String($env:KEYSTORE_B64))
+          } else {
+            Write-Host "keystore: none in the secrets, making one for this run (a later build then needs an uninstall)"
+            & $keytool -genkeypair -v -keystore android\mhgu.keystore -storetype PKCS12 -alias mhgu `
+              -keyalg RSA -keysize 2048 -validity 10000 -storepass $pass -keypass $pass `
+              -dname "CN=MHGU zh, O=local build, C=CN" | Out-Null
+          }
+          if (-not (Test-Path android\mhgu.keystore)) { throw "no keystore" }
+          "storePassword=$pass`nkeyAlias=mhgu`nkeyPassword=$pass" | Set-Content -Encoding ascii android\keystore.properties
+
+      - name: Gradle assembleRelease
+        shell: pwsh
+        run: |
+          cd android
+          .\gradlew.bat --no-daemon assembleRelease
+          if ($LASTEXITCODE -ne 0) { throw "gradle failed: $LASTEXITCODE" }
+
+      - name: Report the APK
+        shell: pwsh
+        run: |
+          $apk = Get-ChildItem android\app\build\outputs\apk\release\*.apk | Select-Object -First 1
+          $apk.FullName
+          "{0:N0} bytes" -f $apk.Length
+          (Get-FileHash $apk.FullName -Algorithm SHA256).Hash.ToLower() + "  " + $apk.Name
+          $sdk = if ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT } else { $env:ANDROID_HOME }
+          $bt = Get-ChildItem (Join-Path $sdk 'build-tools') -Directory | Sort-Object Name -Descending |
+                Select-Object -First 1
+          & (Join-Path $bt.FullName 'apksigner.bat') verify --print-certs $apk.FullName | Select-Object -First 6
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MHGU-apk-zh
+          path: android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 30
