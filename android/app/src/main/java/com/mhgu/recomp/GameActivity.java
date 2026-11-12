@@ -412,6 +412,7 @@ public class GameActivity extends SDLActivity {
     /** Crea las carpetas del jugador y copia lo que el APK trae para ellas (la lista de pipelines). */
     private void prepareFiles() {
         AppHome.ensure(this);  // (a start without GameFolderActivity: a controller plugged in)
+        AppHome.font(this);  // (the menu's Chinese: APK assets -> home/fonts/ui-zh.ttf)
         SaveFolder.applyPending(this);  // (before the game: Ajustes -> Carpeta de partidas)
         SaveImportActivity.applyPending(this);  // (before the game: Ajustes -> Importar partida)
         File home = AppHome.home(this);

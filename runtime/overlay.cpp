@@ -421,6 +421,9 @@ static void forge_style(ImGuiStyle &style) {  // Forge's own (source/forge/graph
 // ship beside the program (`fonts/`)
 static void merge_cjk(ImGuiIO &io, float size) {
     std::vector<std::string> paths;
+    // (the app's own first: on many phones the system's CJK font is a CFF collection, which stb_truetype can't read -
+    //  that came out as boxes. Android copies it out of the APK's assets into the home's fonts/ at the start)
+    paths.push_back("fonts/ui-zh.ttf");
 #ifdef __ANDROID__
     for (const char *p : {"/system/fonts/NotoSansSC-Regular.otf", "/system/fonts/NotoSansCJK-Regular.ttc",
                           "/system/fonts/NotoSansCJKsc-Regular.otf", "/system/fonts/DroidSansFallback.ttf"})
@@ -430,7 +433,7 @@ static void merge_cjk(ImGuiIO &io, float size) {
     std::string dir = std::string(windir && *windir ? windir : "C:/Windows") + "/Fonts/";
     for (const char *p : {"msyh.ttc", "msyh.ttf", "simhei.ttf", "msyhl.ttc", "simsun.ttc", "Deng.ttf"})
         paths.push_back(dir + p);
-    paths.push_back("fonts/NotoSansSC-Regular.otf");
+    paths.push_back("fonts/ui-zh.ttf");  // (a desktop build that ships its own, beside the program)
 #else
     for (const char *p : {"/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
                           "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc"})

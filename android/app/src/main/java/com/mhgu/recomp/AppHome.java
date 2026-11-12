@@ -11,6 +11,7 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -84,6 +85,29 @@ final class AppHome {
         writeText(new File(own, MARK), own.getAbsolutePath());
         Log.i(TAG, "home: " + count[0] + " file(s) copied from " + ext);
         keepGameFiles(c, own);
+    }
+
+    /**
+     * The menu's Chinese font, out of the APK's assets: many phones have their CJK font as a CFF collection, which the
+     * menu's font loader (stb_truetype, behind Dear ImGui) cannot read, and the menu came out as boxes. Copied into the
+     * home's fonts/ once, where runtime/overlay.cpp's merge_cjk() looks for it before the system's own.
+     */
+    static void font(Context c) {
+        File home = home(c);
+        if (home == null) return;
+        File out = new File(new File(home, "fonts"), "ui-zh.ttf");
+        if (out.isFile() && out.length() > 100000) return;  // (already there)
+        File dir = out.getParentFile();
+        try {
+            if (dir != null && !dir.isDirectory() && !dir.mkdirs()) return;
+            try (InputStream in = c.getAssets().open("fonts/ui-zh.ttf");
+                 FileOutputStream o = new FileOutputStream(out)) {
+                byte[] buf = new byte[65536];
+                for (int n; (n = in.read(buf)) > 0; ) o.write(buf, 0, n);
+            }
+        } catch (IOException e) {
+            Log.w(TAG, "fonts: " + e);
+        }
     }
 
     /**
